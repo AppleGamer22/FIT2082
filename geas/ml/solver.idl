@@ -1,0 +1,162 @@
+quote(c, "#include <geas/solver/stats.h>");
+quote(c, "#include <geas/solver/options.h>");
+quote(c, "#include <geas/c/geas.h>");
+
+import "atom.idl";
+
+quote(c, "void free_solver(solver* s) { destroy_solver(*s); }");
+quote(c, "void free_model(model* m) { destroy_model(*m); }");
+quote(c, "void free_intvar(intvar* v) { destroy_intvar(*v); }");
+quote(c, "void free_floatvar(fpvar* v) { destroy_floatvar(*v); }");
+quote(c, "void free_intslice(intslice* v) { destroy_intslice(*v); }");
+
+quote(c, "int cmp_intvar(intvar* x, intvar* y) { return compare_intvar(*x, *y); }");
+quote(c, "int hsh_intvar(intvar* x) { return hash_intvar(*x); }");
+
+quote(c, "int cmp_intslice(intslice* x, intslice* y) { return compare_intslice(*x, *y); }");
+quote(c, "int hsh_intslice(intslice* x) { return hash_intslice(*x); }");
+
+typedef enum { SAT, UNSAT, UNKNOWN } result;
+typedef enum { VAR_INORDER, VAR_FIRSTFAIL, VAR_LEAST, VAR_GREATEST } var_choice;
+typedef enum { VAL_MIN, VAL_MAX, VAL_SPLIT } val_choice;
+
+typedef struct {
+  int conflicts;
+  int restarts;
+  int solutions;
+  double time;
+
+  int num_learnts;
+  int num_learnt_lits;
+} statistics;
+
+typedef struct {
+  int learnt_dbmax; 
+  double learnt_growthrate;
+
+  double pred_act_inc;
+  double pred_act_growthrate; 
+
+  double learnt_act_inc;
+  double learnt_act_growthrate;
+
+  int restart_limit;
+  double restart_growthrate;
+
+  boolean one_watch;
+  boolean global_diff;
+
+  int eager_threshold;
+} options;
+
+typedef struct {
+  [mlname(max_time)] double time;
+  [mlname(max_conflicts)] int conflicts;
+} limits;
+
+typedef [abstract,ptr,finalize(free_solver)] struct solver_s* solver;
+typedef [abstract,ptr,finalize(free_model)] struct model_s* model;
+typedef [abstract,ptr,finalize(free_intvar),compare(cmp_intvar),hash(hsh_intvar)] struct intvar_s* intvar;
+typedef [abstract,ptr,finalize(free_intslice),compare(cmp_intslice),hash(hsh_intslice)] struct intslice_s* intslice;
+typedef [abstract,ptr,finalize(free_floatvar)] struct fpvar_s* fpvar;
+typedef [abstract,ptr] struct brancher_s* brancher;
+
+quote(mlmli, "type t  = solver");
+
+[mlname(default_options)] options default_opts(void);
+solver new_solver([in] options o);
+int solver_id([in] solver s);
+// bool propagate([in] solver);
+
+brancher new_int_brancher(var_choice varc, val_choice valc, [in,size_is(sz)] intvar vs[], int sz);
+brancher new_bool_brancher(var_choice varc, val_choice valc, [in,size_is(sz)] atom vs[], int sz);
+brancher new_bool_priority_brancher(var_choice varc,
+  [in,size_is(xsz)] atom xs[], int xsz,
+  [in,size_is(bsz)] brancher bs[], int bsz);
+brancher new_int_priority_brancher(var_choice varc,
+  [in,size_is(xsz)] intvar xs[], int xsz,
+  [in,size_is(bsz)] brancher bs[], int bsz);
+brancher seq_brancher([in,size_is(sz)] brancher bs[], int sz);
+brancher limit_brancher([in] brancher base);
+brancher warmstart_brancher([in, size_is(sz)] atom xs[], int sz);
+brancher toggle_brancher([in,size_is(sz)] brancher bs[], int sz);
+void add_brancher([in] solver s, [in] brancher b);
+brancher get_brancher([in] solver s);
+
+limits unlimited(void);
+boolean is_consistent([in] solver s);
+result solve([in] solver s, limits l);
+[mlname(abort)] void abort_solve([in] solver s);
+
+boolean post_atom([in] solver s, atom at);
+
+boolean post_clause([in] solver s, [in,size_is(sz)] atom cl[], int sz);
+
+boolean assume([in] solver s, atom at);
+void retract([in] solver s);
+void retract_all([in] solver s);
+quote(mlmli, "external get_conflict : solver -> Atom.t array = \"ml_get_conflict\"");
+
+intvar new_intvar([in] solver s, int lb, int ub);
+intvar permute_intvar([in] solver s, [in] intvar x, [in, size_is(sz)] int vals[], int sz);
+intvar intvar_neg([in] intvar x);
+intvar intvar_plus([in] intvar x, [in] int k);
+boolean make_sparse([in] intvar x, [in,size_is(sz)] int vals[], int sz);
+atom new_boolvar([in] solver s);
+
+intslice slice_of_intvar(intvar x);
+intslice slice_from(intslice x, int lb);
+intslice slice_upto(intslice x, int ub);
+intslice slice_rezero(intslice x, int zero_val);
+
+fpvar new_floatvar([in] solver s, float lb, float ub);
+
+void set_bool_polarity([in] solver s, [in] atom at, [in] boolean pol);
+void set_int_polarity([in] intvar x, [in] boolean pol);
+
+[int32,mlname(ivar_pred)] pred_t ivar_pid([in] intvar v);
+int ivar_lb([in] intvar v);
+int ivar_ub([in] intvar v);
+int current_ivar_lb([in] intvar v);
+int current_ivar_ub([in] intvar v);
+quote(mlmli, "external get_ivar_activities : solver -> intvar array -> float array = \"ml_get_ivar_activities\"");
+int suggest_ivar_value(solver s, intvar v);
+
+model get_model([in] solver s);
+int int_value([in] model m, [in] intvar v);
+int intslice_value([in] model m, [in] intslice v);
+float float_value([in] model m, [in] fpvar v);
+boolean atom_value([in] model m, atom at);
+
+atom ivar_le([in] intvar v, [in] int k);
+atom ivar_eq([in] intvar v, [in] int k);
+atom islice_le([in] intslice v, [in] int k);
+atom fpvar_le([in] fpvar v, [in] float k);
+atom fpvar_lt([in] fpvar v, [in] float k);
+
+pred_t new_pred([in] solver s, [in] int lb, [in] int ub);
+atom pred_ge([in] pred_t p, [in] int k);
+
+statistics get_statistics([in] solver s);
+
+void set_cons_id([in] solver s, int id);
+
+quote(mli, "val ivar_lt : intvar -> int -> Atom.t");
+quote(mli, "val ivar_ge : intvar -> int -> Atom.t");
+quote(mli, "val ivar_gt : intvar -> int -> Atom.t");
+quote(mli, "val ivar_ne : intvar -> int -> Atom.t");
+quote(mli, "val islice_lt : intslice -> int -> Atom.t");
+quote(mli, "val islice_ge : intslice -> int -> Atom.t");
+quote(mli, "val islice_gt : intslice -> int -> Atom.t");
+quote(mli, "val fpvar_gt : fpvar -> float -> Atom.t");
+quote(mli, "val fpvar_ge : fpvar -> float -> Atom.t");
+
+quote(ml, "let ivar_lt v k = ivar_le v (k-1)");
+quote(ml, "let ivar_ge v k = Atom.neg (ivar_lt v k)");
+quote(ml, "let ivar_gt v k = Atom.neg (ivar_le v k)");
+quote(ml, "let ivar_ne v k = Atom.neg (ivar_eq v k)");
+quote(ml, "let islice_lt v k = islice_le v (k-1)");
+quote(ml, "let islice_ge v k = Atom.neg (islice_lt v k)");
+quote(ml, "let islice_gt v k = Atom.neg (islice_le v k)");
+quote(ml, "let fpvar_ge v k = Atom.neg (fpvar_lt v k)");
+quote(ml, "let fpvar_gt v k = Atom.neg (fpvar_le v k)");

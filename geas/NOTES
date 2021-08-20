@@ -1,0 +1,57 @@
+nanophage - Minimal prototype for phage.
+============================================================
+
+DEV NOTES
+---------
+- For introduced atomic constraint identifiers,
+  we need to be able to:
+  + Evaluate it at levels before it was introduced
+  + Switch to a cheaper evaluation method thereafter
+  + Detect, during conflict analysis, when it would become false.
+
+- Need to modify env::post to call the watchers immediately,
+  rather than waiting until solver::propagate.
+  This avoids:
+    - the same atomic constraint being posted multiple times
+    - continuing to propagate after a conflict could be identified
+
+Managers
+--------
+Atom managers deal with interpretations of atomic constraints.
+
+During propagation, a propagator makes an inference.
+The engine is informed, which dispatches to the appropriate manager.
+  - The manager checks whether the inference is conflicting.
+    If not, the manager's internal state is updated, and the
+    the inference is recorded in the trail (together with
+    a reason thunk and data-trail timestamp), then
+    the relevant propagators are woken.
+    (GKG) Should we defer wake-up to the main propagation routine?
+    (GKG) Also, should the variables call the correct manager directly?
+          Rather than going via the engine -- saves an indirection.
+    (GKG) Can't think of a good way to avoid the trail timestamp; we need
+          some way to synchronize the data trail with the inferences.
+  - The only event an atom _must_ watching is the assignment
+    of one of its atoms. This is needed for the clause database.
+    The engine has no built-in notion of other event kinds.
+
+(GKG) 
+
+During conflict analyisis, a manager needs to be able to:
+  - Keep track of the current set of conflict atoms (which are owned
+    by the manager)
+  - Check (a) if an atom became true at the current level, and
+    (b) check which level an atom _did_ become true.
+  - Check whether an inference must be resolved; that is,
+    Curr /\ [|a|] |- curr, but Curr |/- confl.
+    ~[|a|] does not necessarily occur 
+
+Bit-vector/set variables
+------------------------
+The subset-bounds representation of set variables is x in [L, U],
+where L \subseteq x \subseteq U.
+This gives us atoms [|L \subseteq x|] and [|x \subseteq U|].
+The complements are [|~x \cap L \neq 0|] and [|x \cap ~U \neq 0|].
+
+Annoyingly, any concrete positive instances are a pain to propagate,
+because we need to watch every x_{L_i}.

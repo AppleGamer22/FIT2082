@@ -1,0 +1,65 @@
+quote(c, "#include <geas/c/builtins.h>");
+
+import "atom.idl";
+import "solver.idl";
+
+typedef struct {
+  [mlname(ic)] int c;
+  [mlname(ix)] intvar x; 
+} int_linterm;
+boolean linear_le([in] solver s, atom r, [in,size_is(sz)] int_linterm ts[], int sz, int k);
+boolean linear_ne([in] solver s, atom r, [in,size_is(sz)] int_linterm ts[], int sz, int k);
+
+typedef struct {
+  [mlname(sc)] int c;
+  [mlname(sx)] intslice x;
+} slice_linterm;
+boolean slice_linear_le([in] solver s, atom r, [in,size_is(sz)] slice_linterm ts[], int sz, int k);
+
+typedef struct {
+  [mlname(ac)] int c;
+  [mlname(ax)] atom x; 
+} at_linterm;
+boolean bool_linear_le([in] solver s, atom r, intvar z, [in,size_is(sz)] at_linterm ts[], int sz, int k);
+boolean bool_linear_ge([in] solver s, atom r, intvar z, [in,size_is(sz)] at_linterm ts[], int sz, int k);
+boolean bool_linear_ne([in] solver s, atom r, [in,size_is(sz)] at_linterm ts[], int sz, int k);
+
+typedef struct {
+  [mlname(ds)] intvar start;
+  [mlname(dd)] int dur;
+} dtask;
+
+boolean disjunctive([in] solver s, [in,size_is(sz)] dtask ts[], int sz);
+
+typedef struct {
+  [mlname(cs)] intvar start;
+  [mlname(cd)] int dur;
+  [mlname(cr)] int res;
+} task;
+
+typedef struct {
+  [mlname(vs)] intvar start;
+  [mlname(vd)] intvar dur;
+  [mlname(vr)] intvar res;
+} vtask;
+
+typedef struct {
+  [mlname(fs)] intvar start;
+  [mlname(fd)] int dur;
+  [mlname(fr)] float res;
+} ftask;
+
+boolean cumulative([in] solver s, [in,size_is(sz)] task ts[], int sz, int cap);
+boolean cumulative_var([in] solver s, [in,size_is(sz)] vtask ts[], int sz, intvar cap);
+boolean cumulative_float([in] solver s, [in,size_is(sz)] ftask ts[], int sz, float cap);
+
+typedef struct {
+  [mlname(at)] atom at;
+  [mlname(src)] int src;
+  [mlname(sink)] int sink;
+} bp_flow;
+
+boolean bipartite_flow([in] solver s,
+  [in,size_is(srcs_sz)] int srcs[], int srcs_sz,
+  [in,size_is(sinks_sz)] int sinks[], int sinks_sz,
+  [in,size_is(flows_sz)] bp_flow flows[], int flows_sz);

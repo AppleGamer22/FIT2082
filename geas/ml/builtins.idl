@@ -1,0 +1,103 @@
+quote(c, "#include <geas/c/builtins.h>");
+
+import "atom.idl";
+import "solver.idl";
+import "internal.idl";
+quote(ml, "module I = Internal");
+
+/* These return false on top-level failure. */
+// boolean clause([in] solver s, [in,size_is(sz)] atom cl[], int sz);
+
+typedef struct {
+  intvar start;
+  int dur;
+  int res;
+} task;
+
+// These are half-reified.
+// For strict versions, call with r = at_True
+//boolean linear_le([in] solver s, atom r, [in,size_is(sz)] int_linterm ts[], int sz, int k);
+//boolean linear_ne([in] solver s, atom r, [in,size_is(sz)] int_linterm ts[], int sz, int k);
+quote(ml, "let to_linterm cx = { I.ic = fst cx; I.ix = snd cx }");
+quote(ml, "let to_slice_linterm cx = { I.sc = fst cx; I.sx = snd cx }");
+quote(mli, "val linear_le : Solver.t -> Atom.t -> (int * Solver.intvar) array -> int -> bool");
+quote(mli, "val linear_ne : Solver.t -> Atom.t -> (int * Solver.intvar) array -> int -> bool");
+quote(mli, "val slice_linear_le : Solver.t -> Atom.t -> (int * Solver.intslice) array -> int -> bool");
+quote(ml, "let linear_le s r xs k = \
+  I.linear_le s r (Array.map to_linterm xs) k");
+quote(ml, "let linear_ne s r xs k = \
+  I.linear_ne s r (Array.map to_linterm xs) k");
+quote(ml, "let slice_linear_le s r xs k = \
+  I.slice_linear_le s r (Array.map to_slice_linterm xs) k");
+
+boolean atmost_1([in] solver s, atom r, [in,size_is(sz)] atom xs[], int sz);
+boolean atmost_k([in] solver s, atom r, [in,size_is(sz)] atom xs[], int sz, int k);
+
+/*
+boolean bool_linear_le([in] solver s, intvar z, [in,size_is(sz)] at_linterm ts[], int sz, int k);
+boolean bool_linear_ge([in] solver s, intvar z, [in,size_is(sz)] at_linterm ts[], int sz, int k);
+boolean bool_linear_ne([in] solver s, atom r, [in,size_is(sz)] at_linterm ts[], int sz, int k);
+*/
+quote(ml, "let to_at_linterm cx = { I.ac = fst cx; I.ax = snd cx }");
+quote(mli, "val bool_linear_le : Solver.t -> Atom.t -> Solver.intvar -> (int * Atom.t) array -> int -> bool");
+quote(mli, "val bool_linear_ge : Solver.t -> Atom.t -> Solver.intvar -> (int * Atom.t) array -> int -> bool");
+quote(mli, "val bool_linear_ne : Solver.t -> Atom.t -> (int * Atom.t) array -> int -> bool");
+quote(ml, "let bool_linear_le s r z xs k = \
+  I.bool_linear_le s r z (Array.map to_at_linterm xs) k");
+quote(ml, "let bool_linear_ge s r z xs k = \
+  I.bool_linear_ge s r z (Array.map to_at_linterm xs) k");
+quote(ml, "let bool_linear_ne s r xs k = \
+  I.bool_linear_ne s r (Array.map to_at_linterm xs) k");
+
+boolean int_mul([in] solver s, atom r, intvar z, intvar x, intvar y);
+boolean int_div([in] solver s, atom r, intvar z, intvar x, intvar y);
+boolean int_abs([in] solver s, atom r, intvar z, intvar x);
+boolean int_max([in] solver s, atom r,
+  intvar z, [in,size_is(sz)] intvar xs[], int sz);
+
+boolean int_le([in] solver s, atom r, intvar z, intvar x, int k);
+boolean int_ne([in] solver s, atom r, intvar z, intvar x);
+boolean int_eq([in] solver s, atom r, intvar z, intvar x);
+
+boolean int_element([in] solver s, atom r,
+  intvar z, intvar x, [in,size_is(sz)] int elts[], int sz);
+boolean var_int_element([in] solver s, atom r,
+  intvar z, intvar x, [in,size_is(sz)] intvar elts[], int sz);
+
+boolean all_different_int([in] solver s, [in,size_is(sz)] intvar elts[], int sz);
+boolean all_different_except_0([in] solver s, [in,size_is(sz)] intvar elts[], int sz);
+
+/* boolean cumulative([in] solver s, [in,size_is(sz)] task ts[], int sz, int cap); */
+quote(mli, "val cumulative : \
+  Solver.t -> (Solver.intvar * int * int) array -> int -> bool");
+quote(ml, "let cumulative s xs c = \
+  I.cumulative s (Array.map (fun (x, d, r) -> { I.cs = x ; I.cd = d ; I.cr = r }) xs) c");
+quote(mli, "val cumulative_var : \
+  Solver.t -> (Solver.intvar * Solver.intvar * Solver.intvar) array -> Solver.intvar -> bool");
+quote(ml, "let cumulative_var s xs c = \
+  I.cumulative_var s (Array.map (fun (x, d, r) -> { I.vs = x ; I.vd = d ; I.vr = r }) xs) c");
+quote(mli, "val cumulative_float : \
+  Solver.t -> (Solver.intvar * int * float) array -> float -> bool");
+quote(ml, "let cumulative_float s xs c = \
+  I.cumulative_float s (Array.map (fun (x, d, r) -> { I.fs = x ; I.fd = d ; I.fr = r }) xs) c");
+
+quote(mli, "val disjunctive : \
+  Solver.t -> (Solver.intvar * int) array -> bool");
+quote(ml, "let disjunctive s xs = \
+  I.disjunctive s (Array.map (fun (x, d) -> { I.ds = x ; I.dd = d }) xs)");
+
+quote(mli, "val bipartite_flow : \
+  Solver.t -> int array -> int array -> (Atom.t * int * int) array -> bool");
+quote(ml, "let bipartite_flow s srcs sinks flows = \
+  I.bipartite_flow s srcs sinks (Array.map (fun (a, sr, de) -> { I.src = sr; I.sink = de; I.at = a }) flows)")
+  
+boolean precede_chain_int([in] solver s, [in,size_is(sz)] intvar xs[], int sz);
+boolean precede_int([in] solver s, int a, int b, [in,size_is(sz)] intvar xs[], int sz);
+
+/* Table constraints */
+typedef enum { Table_Clause, Table_Elem, Table_CT, Table_Default } table_mode;
+typedef int table_id;
+table_id build_table([in] solver s, [in] int arity, [in,size_is(sz)] int elts[], int sz);
+boolean table([in] solver s, table_id t, [in,size_is(sz)] intvar xs[], int sz, table_mode m);
+
+/* Regular constraints */
