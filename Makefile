@@ -14,6 +14,8 @@ geas:
 
 lazycbs:
 	cd lazycbs && $(MAKE)
+	cd -
+	./lazycbs/lazy-cbs --map maps/warehouse-10-20-10-2-1.map.ecbs --agents scenarios/even/warehouse-10-20-10-2-1-even-1.scen --upto 5
 
 clean:
 	cd ECBS_PF && $(MAKE) clean
