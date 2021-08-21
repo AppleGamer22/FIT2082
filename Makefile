@@ -1,14 +1,24 @@
+.PHONY: init build ecbs geas lazycbs clean
+
+init:
+	sudo apt update
+	sudo apt install -y build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev
+
+build: ecbs geas lazycbs
+
 ecbs:
-	cd ECBS_PF
-	make
+	cd ECBS_PF && $(MAKE)
+
 geas:
-	cd geas
-	make
+	cd geas && $(MAKE)
+
 lazycbs:
-	cd lazycbs
-	make
+	cd lazycbs && $(MAKE)
+
 clean:
-	-rm ECBS_PF/libecbs.a
-	-rm ECBS_PF/*.o
-	-rm geas/libgeas.a
-	-rm lazycbs/lazy-cbs
+	cd ECBS_PF && $(MAKE) clean
+	cd -
+	cd geas && $(MAKE) clean
+	cd -
+	cd lazycbs && $(MAKE) clean
+	cd -
