@@ -3,3 +3,4 @@
 *.o
 geas/fz/
 lazycbs/lazy-cbs
+*.log

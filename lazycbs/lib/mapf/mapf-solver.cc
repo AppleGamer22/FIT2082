@@ -217,6 +217,18 @@ void MAPF_Solver::printPaths(FILE* f) const {
     }
     fprintf(f, "\n");
   }
+  fprintf(f, "Constraints: ");
+  for (auto constraint: cons_map) {
+    int loc1 = constraint.first.loc1, loc2 = constraint.first.loc2, timestamp = constraint.first.timestamp;
+    fprintf(f, " ((%d, %d), (%d, %d), %d)", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2) - 1, col_of(loc2) - 1, timestamp);
+  }
+  fprintf(f, "\n");
+  fprintf(f, "Barriers: ");
+  for (auto barrier: barrier_map) {
+    int agent = barrier.first.agent, loc = barrier.first.location, time = barrier.first.time_at_edge;
+    fprintf(f, " ((%d, %d), %d, %d)", row_of(loc) - 1, col_of(loc) - 1, agent, time);
+  }
+  fprintf(f, "\n");
 }
 // Returns maximum length
 /*
