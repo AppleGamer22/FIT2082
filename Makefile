@@ -3,6 +3,10 @@
 init:
 	sudo apt update
 	sudo apt install -y build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev
+	opam init
+	echo 'eval "$(opam config env)"' >> ~/.bashrc
+	source ~/.bashrc
+	opam install camlidl
 
 build: ecbs geas lazycbs
 
