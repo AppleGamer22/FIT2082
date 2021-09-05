@@ -3,6 +3,7 @@
 // Mapping different types to/from bit sequences.
 #include <cstring>
 #include <cfloat>
+#include <cstdint>
 
 namespace cast {
 
