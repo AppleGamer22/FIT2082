@@ -12,15 +12,16 @@ I'm a part of a University research project that is developing an explanation ge
 * Gange, G. (2018). `geas`. Bitbucket. https://bitbucket.org/gkgange/geas/src/master/
 
 
-## Ubuntu Dependencies
-* `build-essential`
-* `gcc`
-* `g++`
-* `make`
-* `ocaml`
-  * Run: `opam init`
-  * Append to your `.bashrc`: `eval "$(opam config env)"`
-  * Run: `opam install camlidl`
-* `opam`
-* `libboost-all-dev`
-* `libsparsehash-dev`
+## Dependencies
+### Debian Linux
+```
+sudo apt install build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev
+```
+### Arch Linux
+```
+sudo pacman -S base-devel gcc make ocaml ocaml-compiler-libs opam boost boost-libs sparsehash
+```
+### Required Steps
+1. Run: `opam init`
+2. Append to your `.bashrc`/`.zshrc`: `eval "$(opam config env)"`
+3. Run: `opam install camlidl`
