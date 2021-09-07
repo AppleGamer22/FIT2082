@@ -4,7 +4,7 @@
 
 #include "compute_heuristic.h"
 
-// #define DEBUG_UC
+#define DEBUG_UC
 // #define MAPF_NO_RECTANGLES
 
 namespace mapf {
@@ -209,24 +209,39 @@ void MAPF_Solver::printStats(FILE* f) const {
 }
 
 void MAPF_Solver::printPaths(FILE* f) const {
-  for(int ai = 0; ai < pathfinders.size(); ++ai) {
-    fprintf(f, "Agent %d:", ai);
-    for(int loc : pathfinders[ai]->getPath()) {
-      // fprintf(f, " %d", loc);
-      fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
-    }
-    fprintf(f, "\n");
-  }
+  // for(int ai = 0; ai < pathfinders.size(); ++ai) {
+  //   fprintf(f, "Agent %d:", ai);
+  //   for(int loc : pathfinders[ai]->getPath()) {
+  //     // fprintf(f, " %d", loc);
+  //     fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
+  //   }
+  //   fprintf(f, "\n");
+  // }
   fprintf(f, "Constraints: ");
   for (auto constraint: cons_map) {
     int loc1 = constraint.first.loc1, loc2 = constraint.first.loc2, timestamp = constraint.first.timestamp;
-    fprintf(f, " ((%d, %d), (%d, %d), %d)", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2) - 1, col_of(loc2) - 1, timestamp);
+    fprintf(f, " [(%d,%d),(%d,%d),%d]", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2)-1, col_of(loc2) - 1, timestamp);
   }
   fprintf(f, "\n");
   fprintf(f, "Barriers: ");
-  for (auto barrier: barrier_map) {
-    int agent = barrier.first.agent, loc = barrier.first.location, time = barrier.first.time_at_edge;
-    fprintf(f, " ((%d, %d), %d, %d)", row_of(loc) - 1, col_of(loc) - 1, agent, time);
+  for (auto b_key: barrier_map) {
+    barrier_data barrier = barriers[b_key.second][0];
+    int agent = b_key.first.agent;
+    int startTime = barrier.start;
+    int endTime = startTime + barrier.duration;
+    int rowOrColumn1 = b_key.first.location;
+    int rowOrColumn2 = b_key.first.time_at_edge + startTime;
+    switch(b_key.first.dir) {
+      case UP:
+      case DOWN:
+        fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn2 - 1, rowOrColumn1 - 1, agent, startTime, endTime);
+        break;
+      case LEFT:
+      case RIGHT:
+      default:
+        fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn1 - 1, rowOrColumn2 - 1, agent, startTime, endTime);
+        break;
+    }
   }
   fprintf(f, "\n");
 }
@@ -606,7 +621,7 @@ bool MAPF_Solver::checkForConflicts(void) {
           assert(dx * (col_of(sV) - col_of(sH)) >= 0);
           assert(dy * (row_of(eV) - row_of(eH)) >= 0);
           assert(dx * (col_of(eH) - col_of(eV)) >= 0);
-           
+          
           int locS(ml->linearize_coordinate(row_of(sV), col_of(sH)));
           int locE(ml->linearize_coordinate(row_of(eV), col_of(eH)));
           int t0(stH - abs(row_of(sH) - row_of(locS)));
@@ -841,7 +856,7 @@ bool MAPF_Solver::addConflict(void) {
         
       cons_key k { new_conflict.timestamp, loc1, loc2 };
       auto it(cons_map.find(k));
-       
+      
       int idx;
       if(it != cons_map.end()) {
         idx = (*it).second;
