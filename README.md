@@ -11,6 +11,12 @@ I'm a part of a University research project that is developing an explanation ge
 * Li, J., Harabor, D., Stuckey, P.J., Ma, H., Gange, G. and Koenig, S. (2021). Pairwise symmetry reasoning for multi-agent path finding search. Artificial Intelligence, [online] 301, p.103574. Available at: https://www.sciencedirect.com/science/article/pii/S0004370221001259?via%3Dihub [Accessed 27 Aug. 2021].
 * Gange, G. (2018). `geas`. Bitbucket. https://bitbucket.org/gkgange/geas/src/master/
 
+## Query Parameters
+* path length
+* location
+* time
+* agent
+* edge (expressed as 2 adjacent locations)
 
 ## Dependencies
 ### Debian Linux
