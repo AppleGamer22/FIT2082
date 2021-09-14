@@ -37,12 +37,27 @@ AgentsLoader::AgentsLoader(string fname){
       tokenizer< char_separator<char> >::iterator c_beg=col_tok.begin();
       pair<int,int> curr_pair;
       curr_pair.first = atoi ( (*c_beg).c_str() );
+      if (c_beg == col_tok.end()) {
+        cerr << "Please check you .scen file for syntax errors" << std::endl;
+        myfile.close();
+        exit(1);
+      }
       c_beg++;
       curr_pair.second = atoi ( (*c_beg).c_str() );
       //      cout << "AGENT" << i << ":   START[" << curr_pair.first << "," << curr_pair.second << "] ; ";
       this->initial_locations.push_back(curr_pair);
+      if (c_beg == col_tok.end()) {
+        cerr << "Please check you .scen file for syntax errors" << std::endl;
+        myfile.close();
+        exit(1);
+      }
       c_beg++;
       curr_pair.first = atoi ( (*c_beg).c_str() );
+      if (c_beg == col_tok.end()) {
+        cerr << "Please check you .scen file for syntax errors" << std::endl;
+        myfile.close();
+        exit(1);
+      }
       c_beg++;
       curr_pair.second = atoi ( (*c_beg).c_str() ); 
       //      cout << "GOAL[" << curr_pair.first << "," << curr_pair.second << "]" << endl;

@@ -81,6 +81,11 @@ MapLoader::MapLoader(string fname){
 	    else
 	      my_map[cols*i + currCol] = false;
 	  }
+    if (c_beg == col_tok.end()) {
+      cerr << "Please check you .ecbs file for syntax errors" << std::endl;
+      myfile.close();
+      exit(1);
+    }
 	  c_beg++;
 	  currCol++;
 	}
