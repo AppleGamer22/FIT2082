@@ -22,8 +22,7 @@ geas:
 lazycbs:
 	cd lazycbs && $(MAKE)
 	cd -
-	@echo "warehouse-10-20-10-2-1 with 10 agents"
-	./lazycbs/lazy-cbs --map maps/warehouse-10-20-10-2-1.map.ecbs --agents scenarios/even/warehouse-10-20-10-2-1-even-1.scen --upto 25
+	./lazycbs/lazy-cbs --map maps/debug-6-6.map.ecbs --agents scenarios/debug-6-6-2-2.scen --upto 2
 
 clean:
 	cd ECBS_PF && $(MAKE) clean

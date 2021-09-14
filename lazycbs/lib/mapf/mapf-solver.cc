@@ -209,14 +209,14 @@ void MAPF_Solver::printStats(FILE* f) const {
 }
 
 void MAPF_Solver::printPaths(FILE* f) const {
-  // for(int ai = 0; ai < pathfinders.size(); ++ai) {
-  //   fprintf(f, "Agent %d:", ai);
-  //   for(int loc : pathfinders[ai]->getPath()) {
-  //     // fprintf(f, " %d", loc);
-  //     fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
-  //   }
-  //   fprintf(f, "\n");
-  // }
+  for(int ai = 0; ai < pathfinders.size(); ++ai) {
+    fprintf(f, "Agent %d:", ai);
+    for(int loc : pathfinders[ai]->getPath()) {
+      // fprintf(f, " %d", loc);
+      fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
+    }
+    fprintf(f, "\n");
+  }
   fprintf(f, "Constraints: ");
   for (auto constraint: cons_map) {
     int loc1 = constraint.first.loc1, loc2 = constraint.first.loc2, timestamp = constraint.first.timestamp;
@@ -985,7 +985,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf) {
 #ifdef DEBUG_UC
   fprintf(stderr, "%%%% Initial bound: %d\n", cost_lb);
 #endif
- 
+
   vec<geas::patom_t> assumps;
   for(MAPF_Solver::penalty& p : penalties)
     assumps.push(geas::le_atom(p.p, p.lb));
