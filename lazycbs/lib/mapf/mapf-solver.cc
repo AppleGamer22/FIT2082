@@ -900,15 +900,15 @@ bool MAPF_Solver::createAssumption(vec<patom_t> assumptions, int* agent, vec<int
       assumptions.push(costAssumption);
     }
     HL_conflicts++;
-    for(auto new_conflict : new_conflicts) {
+    for(auto new_conflict: new_conflicts) {
       if(new_conflict.type != C_BARRIER) {
         int loc1 = new_conflict.p.loc1;
         int loc2 = new_conflict.p.loc2;
         if(loc2 > loc1) std::swap(loc1, loc2);
-          
+
         cons_key k { new_conflict.timestamp, loc1, loc2 };
         auto it(cons_map.find(k));
-        
+
         int idx;
         if(it != cons_map.end()) {
           idx = (*it).second;
@@ -921,19 +921,10 @@ bool MAPF_Solver::createAssumption(vec<patom_t> assumptions, int* agent, vec<int
         int a1(new_conflict.a1);
         int a2(new_conflict.a2);
         cons_data& c(constraints[idx]);
-        if(!c.attached.elem(a1)) {
-          patom_t at(c.sel != a1);
-          while(s.level() > 0 && at.lb(s.data->ctx()))
-            s.backtrack();
-          pathfinders[a1]->register_obstacle(at, k.timestamp, k.loc1, k.loc2);
-          c.attached.insert(a1);
-        }
-        if(!c.attached.elem(a2)) {
-          patom_t at(c.sel != a2);
-          while(s.level() > 0 && at.lb(s.data->ctx()))
-            s.backtrack();
-          pathfinders[a2]->register_obstacle(at, k.timestamp, k.loc1, k.loc2);
-          c.attached.insert(a2);
+        if (agent != NULL && (*agent == a1 || *agent == a2)) {
+          patom_t agentAssumption = c.sel == *agent;
+          assumptions.push(agentAssumption);
+          break;
         }
       }
     }
