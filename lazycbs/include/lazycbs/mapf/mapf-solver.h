@@ -155,6 +155,7 @@ class MAPF_Solver {
   int HL_conflicts;
 
   inline int row_of(int loc) const { return loc / ml->cols; }
+  inline int loc_of_row(int row) const { return row * ml->cols; }
   inline int col_of(int loc) const { return loc % ml->cols; }
 
   int maxPathLength(void) const;
@@ -171,6 +172,7 @@ class MAPF_Solver {
   // In buildPlan, we also try to apply bypasses.
   bool resolveConflicts(void);
   bool addConflict(void);
+  bool createAssumption(vec<patom_t> assumptions, int* agent, vec<int>* locations, vec<int>* times, int* cost);
   bool processCore(vec<geas::patom_t>& core);
       
   geas::patom_t getBarrier(int ai, BarrierDir dir, int t0, int p0, int dur);
