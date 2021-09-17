@@ -2,10 +2,13 @@
 
 #include <lazycbs/mapf/mapf-solver.h>
 
+#include <tuple>
+
 #include "compute_heuristic.h"
 
+// turn off in the future
 #define DEBUG_UC
-// #define MAPF_NO_RECTANGLES
+#define MAPF_NO_RECTANGLES
 
 namespace mapf {
 
@@ -892,45 +895,30 @@ bool MAPF_Solver::addConflict(void) {
 }
 
 // based on addConflict
-bool MAPF_Solver::createAssumption(vec<patom_t> assumptions, int* agent, vec<int>* locations, vec<int>* times, int* cost) {
+void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int>* locations, int* time, int* cost) {
   // agent(1), vertex(1, 2), time(7), len(10)
-  if (agent != NULL) {
-    if (cost != NULL) {
-      patom_t costAssumption = pathfinders[*agent]->cost <= *cost;
-      assumptions.push(costAssumption);
-    }
-    HL_conflicts++;
-    for(auto new_conflict: new_conflicts) {
-      if(new_conflict.type != C_BARRIER) {
-        int loc1 = new_conflict.p.loc1;
-        int loc2 = new_conflict.p.loc2;
-        if(loc2 > loc1) std::swap(loc1, loc2);
-
-        cons_key k { new_conflict.timestamp, loc1, loc2 };
-        auto it(cons_map.find(k));
-
-        int idx;
-        if(it != cons_map.end()) {
-          idx = (*it).second;
-        } else {
-          idx = constraints.size();
-          cons_map.insert(std::make_pair(k, idx));
-          constraints.push(cons_data { s.new_intvar(0, pathfinders.size() - 1), btset::bitset(pathfinders.size()) });
-        }
-
-        int a1(new_conflict.a1);
-        int a2(new_conflict.a2);
-        cons_data& c(constraints[idx]);
-        if (agent != NULL && (*agent == a1 || *agent == a2)) {
-          patom_t agentAssumption = c.sel == *agent;
-          assumptions.push(agentAssumption);
-          break;
-        }
-      }
-    }
-    new_conflicts.clear();
+  if (cost != NULL) {
+    patom_t costAssumption = pathfinders[agent]->cost <= *cost;
+    assumptions.push(costAssumption);
   }
-  return false;
+  if (locations != NULL && time != NULL) {
+    int loc1 = get<0>(*locations);
+    int loc2 = get<1>(*locations);
+    //2nd loc = -1 for 1 loc
+    cons_key k { *time, loc1, loc2 };
+    auto it(cons_map.find(k));
+    int idx;
+    if(it != cons_map.end()) {
+      idx = (*it).second;
+    } else {
+      idx = constraints.size();
+      cons_map.insert(std::make_pair(k, idx));
+      constraints.push(cons_data { s.new_intvar(0, pathfinders.size() - 1), btset::bitset(pathfinders.size()) });
+    }
+    cons_data& c(constraints[idx]);
+    patom_t agentAssumption = c.sel == agent;
+    assumptions.push(agentAssumption);
+  }
 }
 
 

@@ -13,7 +13,7 @@
 namespace mapf {
 
 class MAPF_Solver {
- public:
+  public:
   struct SolveAborted { };
 
   struct penalty {
@@ -102,7 +102,7 @@ class MAPF_Solver {
 
     int a1;
     int a2;
-     
+
     union {
       struct {
         int loc1;
@@ -166,13 +166,13 @@ class MAPF_Solver {
 //   bool minimizeMakespan();
   void printPaths(FILE* f = stdout) const;
   void printStats(FILE* f = stdout) const;
-   
+
   bool runUCIter(void);
   bool checkForConflicts(void);
   // In buildPlan, we also try to apply bypasses.
   bool resolveConflicts(void);
   bool addConflict(void);
-  bool createAssumption(vec<patom_t> assumptions, int* agent, vec<int>* locations, vec<int>* times, int* cost);
+  void createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int>* locations, int* time, int* cost);
   bool processCore(vec<geas::patom_t>& core);
       
   geas::patom_t getBarrier(int ai, BarrierDir dir, int t0, int p0, int dur);
