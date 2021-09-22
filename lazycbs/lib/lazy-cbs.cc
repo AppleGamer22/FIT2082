@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
       throw mapf::MAPF_Solver::SolveAborted {};
 
     // bool res = mapf.minimizeCost();
-    okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf);
+    okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, NULL, NULL, NULL, NULL, false);
     // bool res = MAPF_MinMakespan(mapf);
   } catch (mapf::MAPF_Solver::SolveAborted& s) {
     // fprintf(stderr, "%% Solve aborted.\n");
