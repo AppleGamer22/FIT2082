@@ -1085,7 +1085,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, int* agent1, tuple<int, int>* locations, in
       for(int time2 = 0; time2 < plan.size(); time2++) {
         const int location = plan[time2];
         const bool intruded = get<0>(*locations) == location || get<1>(*locations) == location;
-        if (agent2 != *agent1 && intruded) {
+        if (agent2 == *agent1 && intruded) {
           tuple<int, int> locations2 = {location, -1};
           mapf.createAssumption(assumps, agent2, &locations2, &time2, cost, true);
         }
