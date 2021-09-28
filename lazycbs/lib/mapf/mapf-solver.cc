@@ -1031,67 +1031,70 @@ bool MAPF_MinCost(MAPF_Solver& mapf, int* agent1, tuple<int, int>* locations, in
     assumps.push(geas::le_atom(p.p, p.lb));
 
   vec<geas::patom_t> core;
-  while(!mapf.buildPlan(assumps)) {
-    core.clear();
-    mapf.s.get_conflict(core);
-    mapf.s.clear_assumptions();
-    if(core.size() == 0)
-      return false;
-    // Look at the core elements.
-    vec<int> idxs;
-    uint64_t Dmin = UINT64_MAX;
+  planning:
+    while(!mapf.buildPlan(assumps)) {
+      core.clear();
+      mapf.s.get_conflict(core);
+      mapf.s.clear_assumptions();
+      if(core.size() == 0)
+        return false;
+      // Look at the core elements.
+      vec<int> idxs;
+      uint64_t Dmin = UINT64_MAX;
 
-    for(geas::patom_t c : core) {
-      // Every assumption should be in the table.
-      int c_idx = (*penalty_table.find(c.pid)).second;
-      assert(c.val > penalties[c_idx].lb);
-      uint64_t c_delta = c.val - penalties[c_idx].lb;
-      Dmin = std::min(Dmin, c_delta);
-      idxs.push(c_idx);
-    }
-    // We can increase the lower bound by Dmin.
-    // Introduce the new penalty terms, and increase the existing bounds by Dmin.
-    vec<int> coeffs(idxs.size(), 1);
-    for(uint64_t d = 1; d <= Dmin; ++d) {
-      vec<geas::patom_t> slice;
-      for(int ci : idxs) {
-        slice.push(geas::ge_atom(penalties[ci].p, penalties[ci].lb + d));
+      for(geas::patom_t c : core) {
+        // Every assumption should be in the table.
+        int c_idx = (*penalty_table.find(c.pid)).second;
+        assert(c.val > penalties[c_idx].lb);
+        uint64_t c_delta = c.val - penalties[c_idx].lb;
+        Dmin = std::min(Dmin, c_delta);
+        idxs.push(c_idx);
       }
-      // New penalty var.
-      intvar p(mapf.s.new_intvar(0, slice.size()-1));
-      geas::bool_linear_ge(mapf.s.data, geas::at_True, p, coeffs, slice, -1);
-      penalty_table.insert(std::make_pair(p.p, penalties.size()));
-      penalties.push(MAPF_Solver::penalty { p.p, geas::from_int(0) });
+      // We can increase the lower bound by Dmin.
+      // Introduce the new penalty terms, and increase the existing bounds by Dmin.
+      vec<int> coeffs(idxs.size(), 1);
+      for(uint64_t d = 1; d <= Dmin; ++d) {
+        vec<geas::patom_t> slice;
+        for(int ci : idxs) {
+          slice.push(geas::ge_atom(penalties[ci].p, penalties[ci].lb + d));
+        }
+        // New penalty var.
+        intvar p(mapf.s.new_intvar(0, slice.size()-1));
+        geas::bool_linear_ge(mapf.s.data, geas::at_True, p, coeffs, slice, -1);
+        penalty_table.insert(std::make_pair(p.p, penalties.size()));
+        penalties.push(MAPF_Solver::penalty { p.p, geas::from_int(0) });
+      }
+      // Update the existing penalties and bounds
+      for(int ci : idxs) {
+        penalties[ci].lb += Dmin;
+      }
+      cost_lb += Dmin;
+      mapf.cost_lb = cost_lb;
+  #ifdef DEBUG_UC
+        fprintf(stderr, "%%%% Found core of size (%d), current lower bound %d\n", core.size(), cost_lb);
+  #endif
+      
+      // Now set up the updated assumptions
+      assumps.clear();
+      for(MAPF_Solver::penalty& p : penalties)
+        assumps.push(geas::le_atom(p.p, p.lb));
     }
-    // Update the existing penalties and bounds
-    for(int ci : idxs) {
-      penalties[ci].lb += Dmin;
-    }
-    cost_lb += Dmin;
-    mapf.cost_lb = cost_lb;
-#ifdef DEBUG_UC
-      fprintf(stderr, "%%%% Found core of size (%d), current lower bound %d\n", core.size(), cost_lb);
-#endif
-    
-    // Now set up the updated assumptions
-    assumps.clear();
-    for(MAPF_Solver::penalty& p : penalties)
-      assumps.push(geas::le_atom(p.p, p.lb));
-  }
   // assert(!mapf.checkForConflicts());
   if (agent1 != NULL && locations != NULL && time1 == NULL) {
-    for(int agent2 = 0; agent2 < mapf.pathfinders.size(); ++agent2) {
+    bool replan = false;
+    for (int agent2 = 0; agent2 < mapf.pathfinders.size(); ++agent2) {
       const vec<int> plan = mapf.pathfinders[agent2]->getPath();
-      for(int time2 = 0; time2 < plan.size(); time2++) {
+      for (int time2 = 0; time2 < plan.size(); time2++) {
         const int location = plan[time2];
         const bool intruded = get<0>(*locations) == location || get<1>(*locations) == location;
         if (agent2 == *agent1 && intruded) {
           tuple<int, int> locations2 = {location, -1};
           mapf.createAssumption(assumps, agent2, &locations2, &time2, cost, true);
+          replan = true;
         }
       }
     }
-    // todo: rebuild plan
+    if (replan) goto planning;
   }
   return true;
 }
