@@ -243,7 +243,7 @@ PYBIND11_MODULE(lazycbs, m) {
   m.doc() = "XMAPF + Lazy CBS engine";
   // string map, string scenario, int agent, tuple<int, int> locations, int* time, int* cost, bool forbidden
   m.def(
-    "add",
+    "init",
     &init,
     "A function which initiates the pathfinding/explanation engine.",
     py::arg("map"),

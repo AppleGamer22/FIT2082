@@ -1,6 +1,7 @@
 .vagrant
 *.a
 *.o
+*.so
 geas/fz/
 lazycbs/lazy-cbs
 ECBS_PF/libecbs.a

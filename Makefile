@@ -22,7 +22,7 @@ geas:
 lazycbs:
 	cd lazycbs && $(MAKE)
 	cd -
-	./lazycbs/lazy-cbs --map maps/debug-6-6.map.ecbs --agents scenarios/debug-6-6-2-2.scen --upto 2
+	./lazycbs/lazycbs$(shell python3-config --extension-suffix) --map maps/debug-6-6.map.ecbs --agents scenarios/debug-6-6-2-2.scen --upto 2
 
 clean:
 	cd ECBS_PF && $(MAKE) clean

@@ -40,7 +40,7 @@ MAPF_DEPS     = $(addsuffix .d, $(basename $(MAPF_SRCS)))
 #MLTARGETS = ml/libgeas_ml.a ml/geas.cma ml/geas.cmxa ml/geas.a
 #FZN_TARGETS = fzn/fzn_geas fzn/fzn_geas.debug
 
-TARGETS = lazy-cbs
+TARGETS = lazycbs
 LIBGEAS = libgeas.a
 LIBECBS = libecbs.a
 all: $(TARGETS)
@@ -65,7 +65,7 @@ $(TESTS) : % : %.o $(COBJS)
 ## Linking rules
 $(TARGETS):
 	@echo Linking: "$@ ( $^ )"
-	@$(CXX) $^ $(LFLAGS) -o $@ 
+	@$(CXX) $^ $(LFLAGS) -o $@$(shell python3-config --extension-suffix)
 
 #libgeas.a: $(GEAS_ROOT)/libgeas.a
 #	cp $(GEAS_ROOT)/libgeas.a libgeas.a
@@ -74,12 +74,12 @@ $(TARGETS):
 #libecbs.a : $(ECBS_ROOT)/libecbs.a
 #	cp $(ECBS_ROOT)/libecbs.a libecbs.a
 
-lazy-cbs : lib/lazy-cbs.o $(MAPF_OBJS) $(LIB) $(ECBS)
+lazycbs : lib/lazy-cbs.o $(MAPF_OBJS) $(LIB) $(ECBS)
 #	@$(CXX) $^ $(LFLAGS) $(ECBS_LFLAGS) -o $@
 
 ## Clean rule
 clean:
-	@rm -f $(MAPF_OBJS) $(MAPF_DEPS) lib/lazy-cbs.o
+	@rm -f $(MAPF_OBJS) $(MAPF_DEPS) lib/lazy-cbs.o lazycbs$(shell python3-config --extension-suffix)
 clobber: clean
 	@rm -f $(TARGETS)
 
