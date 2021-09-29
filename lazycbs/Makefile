@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 CXX       = g++
 PROF      = 
 MAPF      = mapf
