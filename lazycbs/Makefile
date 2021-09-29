@@ -3,7 +3,7 @@ PROF      =
 MAPF      = mapf
 GEAS_ROOT = ../geas
 ECBS_ROOT = ../ECBS_PF
-CXXFLAGS    = -I include -Wall -Wno-deprecated
+CXXFLAGS    = -fPIC $(shell python -m pybind11 --includes) -I include -Wall -shared -Wno-deprecated
 CXXFLAGS += --std=c++11
 CXXFLAGS += -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS
 CXXFLAGS += $(PROF)
@@ -18,7 +18,7 @@ CXXFLAGS += -I $(ECBS_ROOT) -Wall -I /usr/include/boost/ -I /usr/local/lib -lboo
 ## geas flags
 CXXFLAGS += -I $(GEAS_ROOT)/include
 #ECBS_LFLAGS = -L $(ECBS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
-LFLAGS += -L $(ECBS_ROOT) -L $(GEAS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
+LFLAGS += -L $(shell python-config --ldflags --embed) -L $(ECBS_ROOT) -L $(GEAS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
 LFLAGS += $(PROF_FLAGS)
 
 COPTIMIZE = -O3 -march=native -ffast-math -funroll-loops # -freorder-blocks-and-partition
@@ -75,7 +75,7 @@ $(TARGETS):
 
 lazy-cbs : lib/lazy-cbs.o $(MAPF_OBJS) $(LIB) $(ECBS)
 #	@$(CXX) $^ $(LFLAGS) $(ECBS_LFLAGS) -o $@
-  
+
 ## Clean rule
 clean:
 	@rm -f $(MAPF_OBJS) $(MAPF_DEPS) lib/lazy-cbs.o

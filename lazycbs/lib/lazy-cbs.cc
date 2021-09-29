@@ -15,8 +15,10 @@
 #include <cmath>
 #include <utility>
 #include <boost/program_options.hpp>
-#include<boost/tokenizer.hpp>
+#include <boost/tokenizer.hpp>
+#include <pybind11/pybind11.h>
 
+namespace py = pybind11;
 
 #ifndef EXTRA_PEN
 #define EXTRA_PEN 0  /* Off by default. */
@@ -80,7 +82,6 @@ AgentsLoader read_movingai(std::string fname, int upto) {
 }
 
 int main(int argc, char** argv) {
-
   // Reading arguments ----------------------------------------------------------------
   string map_fname, agents_fname, hwy_fname, search_method, results_fname;
   /* double w_hwy = 1.0 , w_focal = 1.0 */;
@@ -203,4 +204,27 @@ int main(int argc, char** argv) {
     okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
   mapf.printStats(stderr);
   fprintf(stderr, "\n");
+}
+
+
+string init(string map, string scenario, int agent, tuple<int, int> locations, int time, int cost, bool forbidden) {
+  return "";
+}
+
+PYBIND11_MODULE(lazycbs, m) {
+  m.doc() = "XMAPF + Lazy CBS engine";
+  // string map, string scenario, int agent, tuple<int, int> locations, int* time, int* cost, bool forbidden
+  m.def(
+    "add",
+    &init,
+    "A function which initiates the pathfinding/explanation engine.",
+    py::arg("map"),
+    py::arg("scenario"),
+    py::arg("agent"),
+    py::arg("locations"),
+    py::arg("time"),
+    py::arg("cost"),
+    py::arg("forbidden"),
+    py::return_value_policy::copy
+  );
 }

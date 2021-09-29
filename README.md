@@ -27,7 +27,7 @@ I'm a part of a University research project that is developing an explanation ge
 ## Dependencies
 ### Debian Linux
 ```
-sudo apt install build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev
+sudo apt install build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev python-dev
 ```
 ### Arch Linux
 ```

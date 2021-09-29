@@ -5,11 +5,11 @@ SHELL := /bin/bash
 init:
 	touch ~/.hushlogin
 	sudo apt update
-	sudo apt install -y build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev
+	sudo apt install -y build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev python-dev pybind11-dev python3-pybind11
 	opam init
 	echo 'eval "$$(opam config env)"' >> ~/.bashrc
-	source ~/.bashrc
 	opam install camlidl
+	source ~/.bashrc
 
 build: ecbs geas lazycbs
 
