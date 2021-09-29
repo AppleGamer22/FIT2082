@@ -4,14 +4,14 @@ PROF      =
 MAPF      = mapf
 GEAS_ROOT = ../geas
 ECBS_ROOT = ../ECBS_PF
-CXXFLAGS    = -fPIC $(shell python3 -m pybind11 --includes) -I include -Wall -shared -Wno-deprecated
+CXXFLAGS    = -fPIC $(shell python3 -m pybind11 --includes) -I include -Wall -Wno-deprecated
 CXXFLAGS += --std=c++11
 CXXFLAGS += -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS
 CXXFLAGS += $(PROF)
-LFLAGS    = -lz -Wall -Wno-deprecated
+LFLAGS    = -O3 -shared -lz -Wall -Wno-deprecated
 LFLAGS   += $(PROF)
 
-PROF_FLAGS = 
+# PROF_FLAGS = 
 #PROF_FLAGS = -pg
 
 ## ECBS flags
@@ -20,14 +20,14 @@ CXXFLAGS += -I $(ECBS_ROOT) -Wall -I /usr/include/boost/ -I /usr/local/lib -lboo
 CXXFLAGS += -I $(GEAS_ROOT)/include
 #ECBS_LFLAGS = -L $(ECBS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
 LFLAGS += -L $(shell python3-config --ldflags --embed) -L $(ECBS_ROOT) -L $(GEAS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
-LFLAGS += $(PROF_FLAGS)
+# LFLAGS += $(PROF_FLAGS)
 
 COPTIMIZE = -O3 -march=native -ffast-math -funroll-loops # -freorder-blocks-and-partition
 #COPTIMIZE = -O2
 #COPTIMIZE = -O1
 #COPTIMIZE = -O0
 #COPTIMIZE += -DNDEBUG
-COPTIMIZE += $(PROF_FLAGS)
+# COPTIMIZE += $(PROF_FLAGS)
 CXXFLAGS += $(COPTIMIZE)
 #CXXFLAGS += -ggdb -D DEBUG
 CXXFLAGS += -g -ggdb
