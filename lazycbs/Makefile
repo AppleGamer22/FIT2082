@@ -19,7 +19,7 @@ CXXFLAGS += -I $(ECBS_ROOT) -Wall -I /usr/include/boost/ -I /usr/local/lib -lboo
 ## geas flags
 CXXFLAGS += -I $(GEAS_ROOT)/include
 #ECBS_LFLAGS = -L $(ECBS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
-LFLAGS += -L $(shell python-config --ldflags --embed) -L $(ECBS_ROOT) -L $(GEAS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
+LFLAGS += -L $(shell python3-config --ldflags --embed) -L $(ECBS_ROOT) -L $(GEAS_ROOT) -L . -lboost_program_options -lboost_graph -lgeas -lecbs
 LFLAGS += $(PROF_FLAGS)
 
 COPTIMIZE = -O3 -march=native -ffast-math -funroll-loops # -freorder-blocks-and-partition
