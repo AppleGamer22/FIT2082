@@ -1,9 +1,7 @@
 #include <geas/constraints/builtins.h>
-
 #include <lazycbs/mapf/mapf-solver.h>
-
 #include <tuple>
-
+#include <boost/format.hpp>
 #include "compute_heuristic.h"
 
 // turn off in the future
@@ -211,28 +209,35 @@ void MAPF_Solver::printStats(FILE* f) const {
   // std::cout << cost_lb << " ; " << s.data->stats.conflicts << " ; " << LL_num_expanded << " ; " << LL_num_generated << " ; " << HL_conflicts << " ; " << LL_executions;
 }
 
-void MAPF_Solver::printPaths(FILE* f) const {
+string MAPF_Solver::printPaths() const {
+  std::ostringstream output;
   for(int ai = 0; ai < pathfinders.size(); ++ai) {
-    fprintf(f, "Agent %d:", ai);
+    // fprintf(f, "Agent %d:", ai);
+    output << boost::format("Agent %d:") % ai;
     for(int loc : pathfinders[ai]->getPath()) {
-      // fprintf(f, " %d", loc);
-      fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
+      // fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
+      output << boost::format(" (%d,%d)") % (row_of(loc) - 1) % (col_of(loc) - 1);
     }
-    fprintf(f, "\n");
+    // fprintf(f, "\n");
+    output << "\n";
   }
-  fprintf(f, "Constraints: ");
+  // fprintf(f, "Constraints: ");
+  output << "Constraints: ";
   for (auto c_key: cons_map) {
     int loc1 = c_key.first.loc1, loc2 = c_key.first.loc2, timestamp = c_key.first.timestamp;
     int agent = 0;
     for (; agent < pathfinders.size(); agent++) {
       if (constraints[c_key.second].attached.elem(agent) && pathfinders[agent]->getPath()[timestamp] != loc1 && pathfinders[agent]->getPath()[timestamp] != loc2) {
-        fprintf(f, " [(%d,%d),(%d,%d),%d,%d]", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2)-1, col_of(loc2) - 1, agent, timestamp);
+        // fprintf(f, " [(%d,%d),(%d,%d),%d,%d]", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2)-1, col_of(loc2) - 1, agent, timestamp);
+        output << boost::format(" [(%d,%d),(%d,%d),%d,%d]") % (row_of(loc1) - 1) % (col_of(loc1) - 1) % (row_of(loc2) - 1) % (col_of(loc2) - 1) % agent % timestamp;
         break;
       }
     }
   }
-  fprintf(f, "\n");
-  fprintf(f, "Barriers: ");
+  // fprintf(f, "\n");
+  output << "\n";
+  // fprintf(f, "Barriers: ");
+  output << "Barriers: ";
   for (auto b_key: barrier_map) {
     barrier_data barrier = barriers[b_key.second][0];
     int agent = b_key.first.agent;
@@ -243,16 +248,19 @@ void MAPF_Solver::printPaths(FILE* f) const {
     switch(b_key.first.dir) {
       case UP:
       case DOWN:
-        fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn2 - 1, rowOrColumn1 - 1, agent, startTime, endTime);
+        // fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn2 - 1, rowOrColumn1 - 1, agent, startTime, endTime);
+        output << boost::format(" [(%d,%d),%d,%d,%d]") % (rowOrColumn2 - 1) % (rowOrColumn1 - 1) % agent % startTime % endTime;
         break;
       case LEFT:
       case RIGHT:
       default:
-        fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn1 - 1, rowOrColumn2 - 1, agent, startTime, endTime);
+        // fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn1 - 1, rowOrColumn2 - 1, agent, startTime, endTime);
+        output << boost::format(" [(%d,%d),%d,%d,%d]") % (rowOrColumn1 - 1) % (rowOrColumn2 - 1) % agent % startTime % endTime;
         break;
     }
   }
-  fprintf(f, "\n");
+  // fprintf(f, "\n");
+  return output.str();
 }
 // Returns maximum length
 /*

@@ -164,7 +164,7 @@ class MAPF_Solver {
   bool buildPlan(vec<geas::patom_t>& assumps);
   bool minimizeCost();
 //   bool minimizeMakespan();
-  void printPaths(FILE* f = stdout) const;
+  string printPaths() const;
   void printStats(FILE* f = stdout) const;
 
   bool runUCIter(void);

@@ -84,7 +84,7 @@ AgentsLoader read_movingai(std::string fname, int upto) {
 int main(int argc, char** argv) {
   // Reading arguments ----------------------------------------------------------------
   string map_fname, agents_fname, hwy_fname, search_method, results_fname;
-  /* double w_hwy = 1.0 , w_focal = 1.0 */;
+  // double w_hwy = 1.0 , w_focal = 1.0
   int rrr_it, time_limit;  // random restarts iterations number
   int agents_upto;
   bool tweakGVal, rand_succ_gen;
@@ -197,8 +197,10 @@ int main(int argc, char** argv) {
   } catch (mapf::MAPF_Solver::SolveAborted& s) {
     // fprintf(stderr, "%% Solve aborted.\n");
   }
-  if(okay)
-    mapf.printPaths(stdout);
+  if (okay) {
+    cout << mapf.printPaths();
+    cout << "\n";
+  }
 
   fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map_fname.c_str(), agents_fname.c_str(), al.num_of_agents,
     okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
@@ -206,9 +208,35 @@ int main(int argc, char** argv) {
   fprintf(stderr, "\n");
 }
 
+string init(string map, string scenario, int agentsCount, int agent, tuple<int, int> locations, int time, int cost, bool forbidden) {
+  bool opt_makespan = false;
+  std::clock_t start(std::clock());
+  set_handlers();
+  MapLoader ml = MapLoader(map);
+  
+  // read agents' start and goal locations
+  AgentsLoader al(agentsCount < INT_MAX ? read_movingai(scenario, agentsCount) : AgentsLoader(scenario));
 
-string init(string map, string scenario, int agent, tuple<int, int> locations, int time, int cost, bool forbidden) {
-  return "";
+  // read the egraph (egraph file, experience_weight, weigthedastar_weight)
+  EgraphReader egr;
+  mapf::MAPF_Solver mapf(ml, al, egr, 1e8);
+  clear_handlers();
+  bool okay = false;
+  try {
+    if(terminated)
+      throw mapf::MAPF_Solver::SolveAborted {};
+
+    // bool res = mapf.minimizeCost();
+    okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, NULL, NULL, NULL, NULL, false);
+    // bool res = MAPF_MinMakespan(mapf);
+  } catch (mapf::MAPF_Solver::SolveAborted& s) {
+    // fprintf(stderr, "%% Solve aborted.\n");
+  }
+  fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map.c_str(), scenario.c_str(), al.num_of_agents, okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
+  mapf.printStats(stderr);
+  fprintf(stderr, "\n");
+  if (okay) return mapf.printPaths();
+  else return "ERROR";
 }
 
 PYBIND11_MODULE(lazycbs, m) {
@@ -220,6 +248,7 @@ PYBIND11_MODULE(lazycbs, m) {
     "A function which initiates the pathfinding/explanation engine.",
     py::arg("map"),
     py::arg("scenario"),
+    py::arg("agentsCount"),
     py::arg("agent"),
     py::arg("locations"),
     py::arg("time"),
