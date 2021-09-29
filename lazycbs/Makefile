@@ -3,7 +3,7 @@ PROF      =
 MAPF      = mapf
 GEAS_ROOT = ../geas
 ECBS_ROOT = ../ECBS_PF
-CXXFLAGS    = -fPIC $(shell python -m pybind11 --includes) -I include -Wall -shared -Wno-deprecated
+CXXFLAGS    = -fPIC $(shell python3 -m pybind11 --includes) -I include -Wall -shared -Wno-deprecated
 CXXFLAGS += --std=c++11
 CXXFLAGS += -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS
 CXXFLAGS += $(PROF)
