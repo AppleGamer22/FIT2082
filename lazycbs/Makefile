@@ -42,7 +42,7 @@ MAPF_DEPS     = $(addsuffix .d, $(basename $(MAPF_SRCS)))
 
 TARGETS = lazycbs
 LIBGEAS = libgeas.a
-LIBECBS = libecbs.a
+LIBECBS = libecbs.so
 all: $(TARGETS)
 
 ## Dependencies

@@ -1,12 +1,12 @@
 CXX = g++
-CXXFLAGS = -Wall -I /usr/local/lib -std=c++14
+CXXFLAGS = -fPIC -Wall -I /usr/local/lib -std=c++11
 CXXFLAGS += -O3
-CXXFLAGS += -DNDEBUG
+CXXFLAGS += -DNDEBUG -shared
 #CXXFLAGS += -O2 -g -pg
 #CXXFLAGS += -O2 -g
 #CXXFLAGS += -O0 -g
 
-default: libecbs.a
+default: libecbs.so
 
 compute_heuristic.o: compute_heuristic.cpp compute_heuristic.h
 	$(CXX) $(CXXFLAGS) -c compute_heuristic.cpp
@@ -31,8 +31,8 @@ clean:
 clobber: clean
 	rm -rf libecbs.a
 
-libecbs.a : map_loader.o agents_loader.o egraph_reader.o compute_heuristic.o node.o single_agent_ecbs.o
-	@echo Building libecbs.a
+libecbs.so : map_loader.o agents_loader.o egraph_reader.o compute_heuristic.o node.o single_agent_ecbs.o
+	@echo Building libecbs.so
 	@ar rc $@ $^
 	@ranlib $@
 

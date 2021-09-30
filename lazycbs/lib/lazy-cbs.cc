@@ -232,9 +232,9 @@ string init(string map, string scenario, int agentsCount, int agent, tuple<int, 
   } catch (mapf::MAPF_Solver::SolveAborted& s) {
     // fprintf(stderr, "%% Solve aborted.\n");
   }
-  fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map.c_str(), scenario.c_str(), al.num_of_agents, okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
-  mapf.printStats(stderr);
-  fprintf(stderr, "\n");
+  // fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map.c_str(), scenario.c_str(), al.num_of_agents, okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
+  // mapf.printStats(stderr);
+  // fprintf(stderr, "\n");
   if (okay) return mapf.printPaths();
   else return "ERROR";
 }

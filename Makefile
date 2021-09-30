@@ -20,9 +20,7 @@ geas:
 	cd geas && $(MAKE)
 
 lazycbs:
-	cd lazycbs && $(MAKE)
-	cd -
-	./lazycbs/lazycbs$(shell python3-config --extension-suffix) --map maps/debug-6-6.map.ecbs --agents scenarios/debug-6-6-2-2.scen --upto 2
+	cd lazycbs && $(MAKE) && python3 -c 'import lazycbs; print(lazycbs.init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, 0, (-1, -1), 2, 100, False))'
 
 clean:
 	cd ECBS_PF && $(MAKE) clean
