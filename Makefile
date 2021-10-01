@@ -20,7 +20,7 @@ geas:
 	cd geas && $(MAKE)
 
 lazycbs:
-	cd lazycbs && $(MAKE) && python3 -c 'import lazycbs; print(lazycbs.init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, 0, (-1, -1), 2, 100, False))'
+	cd lazycbs && $(MAKE) && python3 -c 'from lazycbs import init; print(init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, [(0, ((-1, -2), (-1, -2)), -2, -100)]))'
 
 clean:
 	cd ECBS_PF && $(MAKE) clean

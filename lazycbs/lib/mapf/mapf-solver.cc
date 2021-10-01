@@ -909,17 +909,17 @@ bool MAPF_Solver::addConflict(void) {
 }
 
 // based on addConflict
-void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int>* locations, int* time, int* cost, bool forbidden) {
+void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int> locations, int time, int cost) {
   // agent(1), vertex(1, 2), time(7), len(10)
-  if (cost != NULL) {
-    patom_t costAssumption = pathfinders[agent]->cost <= *cost;
+  if (cost > 0) {
+    patom_t costAssumption = pathfinders[agent]->cost <= cost;
     assumptions.push(costAssumption);
   }
-  if (locations != NULL && time != NULL) {
-    int loc1 = get<0>(*locations);
-    int loc2 = get<1>(*locations);
-    //2nd loc = -1 for 1 loc
-    cons_key k { *time, loc1, loc2 };
+  int loc1 = get<0>(locations);
+  int loc2 = get<1>(locations);
+  //2nd loc = -1 for 1 loc
+  if (time >= 0 && !(loc1 == -1 && loc2 != -1)) {
+    cons_key k { time, loc1, loc2 };
     auto it(cons_map.find(k));
     int idx;
     if(it != cons_map.end()) {
@@ -930,7 +930,7 @@ void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<i
       constraints.push(cons_data { s.new_intvar(0, pathfinders.size() - 1), btset::bitset(pathfinders.size()) });
     }
     cons_data& c(constraints[idx]);
-    patom_t agentAssumption = forbidden? c.sel != agent : c.sel == agent;
+    patom_t agentAssumption = time > 0 ? c.sel != agent : c.sel == agent;
     assumptions.push(agentAssumption);
   }
 }
@@ -1013,7 +1013,7 @@ MAPF_Solver::~MAPF_Solver(void) {
 
 }
 
-bool MAPF_MinCost(MAPF_Solver& mapf, int* agent1, tuple<int, int>* locations, int* time1, int* cost, bool forbidden) {
+bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int>> assumptions) {
   // Reset any existing assumptions
   mapf.s.clear_assumptions(); 
 
@@ -1032,8 +1032,18 @@ bool MAPF_MinCost(MAPF_Solver& mapf, int* agent1, tuple<int, int>* locations, in
 #endif
 
   vec<geas::patom_t> assumps;
-  if (agent1 != NULL) {
-    mapf.createAssumption(assumps, *agent1, locations, time1, cost, forbidden);
+  for (tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int> assumption: assumptions) {
+    int agent1 = get<0>(assumption);
+    tuple<tuple<int, int>, tuple<int, int>> locations = get<1>(assumption);
+    tuple<int, int> location1 = get<0>(locations);
+    int location1X = get<0>(location1);
+    tuple<int, int> location2 = get<1>(locations);
+    int location2X = get<0>(location2);
+    int time1 = get<2>(assumption);
+    int cost = get<3>(assumption);
+    if (agent1 != -1) {
+      mapf.createAssumption(assumps, agent1, {mapf.loc_of_row(location1X), mapf.loc_of_row(location2X)}, time1, cost);
+    }
   }
   for(MAPF_Solver::penalty& p : penalties)
     assumps.push(geas::le_atom(p.p, p.lb));
@@ -1088,22 +1098,32 @@ bool MAPF_MinCost(MAPF_Solver& mapf, int* agent1, tuple<int, int>* locations, in
         assumps.push(geas::le_atom(p.p, p.lb));
     }
   // assert(!mapf.checkForConflicts());
-  if (agent1 != NULL && locations != NULL && time1 == NULL) {
-    bool replan = false;
-    for (int agent2 = 0; agent2 < mapf.pathfinders.size(); ++agent2) {
-      const vec<int> plan = mapf.pathfinders[agent2]->getPath();
-      for (int time2 = 0; time2 < plan.size(); time2++) {
-        const int location = plan[time2];
-        const bool intruded = get<0>(*locations) == location || get<1>(*locations) == location;
-        if (agent2 == *agent1 && intruded) {
-          tuple<int, int> locations2 = {location, -1};
-          mapf.createAssumption(assumps, agent2, &locations2, &time2, cost, true);
-          replan = true;
+  bool replan = false;
+  for (tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int> assumption: assumptions) {
+    int agent1 = get<0>(assumption);
+    tuple<tuple<int, int>, tuple<int, int>> locations = get<1>(assumption);
+    tuple<int, int> location1 = get<0>(locations);
+    int location1X = get<0>(location1);
+    tuple<int, int> location2 = get<1>(locations);
+    int location2X = get<0>(location2);
+    int time1 = get<2>(assumption);
+    int cost = get<3>(assumption);
+    if (agent1 != -1 && !(mapf.loc_of_row(location1X) == -1 && mapf.loc_of_row(location2X) != -1) && time1 >= 0) {
+      for (int agent2 = 0; agent2 < mapf.pathfinders.size(); ++agent2) {
+        const vec<int> plan = mapf.pathfinders[agent2]->getPath();
+        for (int time2 = 0; time2 < plan.size(); time2++) {
+          const int location = plan[time2];
+          const bool intruded = mapf.loc_of_row(location1X) == location || mapf.loc_of_row(location2X) == location;
+          if (agent2 == agent1 && intruded) {
+            tuple<int, int> locations2 = {location, -1};
+            mapf.createAssumption(assumps, agent2, {mapf.loc_of_row(location1X), mapf.loc_of_row(location2X)}, time2, cost);
+            replan = true;
+          }
         }
       }
     }
-    if (replan) goto planning;
   }
+  if (replan) goto planning;
   return true;
 }
 

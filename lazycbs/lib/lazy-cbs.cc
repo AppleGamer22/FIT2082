@@ -17,6 +17,7 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -192,7 +193,7 @@ AgentsLoader read_movingai(std::string fname, int upto) {
 //       throw mapf::MAPF_Solver::SolveAborted {};
 
 //     // bool res = mapf.minimizeCost();
-//     okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, NULL, NULL, NULL, NULL, false);
+//     okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, assumptions);
 //     // bool res = MAPF_MinMakespan(mapf);
 //   } catch (mapf::MAPF_Solver::SolveAborted& s) {
 //     // fprintf(stderr, "%% Solve aborted.\n");
@@ -208,7 +209,9 @@ AgentsLoader read_movingai(std::string fname, int upto) {
 //   fprintf(stderr, "\n");
 // }
 
-string init(string map, string scenario, int agentsCount, int agent, tuple<int, int> locations, int time, int cost, bool forbidden) {
+string init(string map, string scenario, int agentsCount, vector<tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int>> assumptions) {
+  // int agent, tuple<int, int> locations, int time, int cost, bool forbidden
+  // empty location == (-1, 2)
   bool opt_makespan = false;
   std::clock_t start(std::clock());
   set_handlers();
@@ -227,7 +230,7 @@ string init(string map, string scenario, int agentsCount, int agent, tuple<int, 
       throw mapf::MAPF_Solver::SolveAborted {};
 
     // bool res = mapf.minimizeCost();
-    okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, NULL, NULL, NULL, NULL, false);
+    okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, assumptions);
     // bool res = MAPF_MinMakespan(mapf);
   } catch (mapf::MAPF_Solver::SolveAborted& s) {
     // fprintf(stderr, "%% Solve aborted.\n");
@@ -249,11 +252,7 @@ PYBIND11_MODULE(lazycbs, m) {
     py::arg("map"),
     py::arg("scenario"),
     py::arg("agentsCount"),
-    py::arg("agent"),
-    py::arg("locations"),
-    py::arg("time"),
-    py::arg("cost"),
-    py::arg("forbidden"),
+    py::arg("assumptions"),
     py::return_value_policy::copy
   );
 }

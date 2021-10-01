@@ -172,7 +172,7 @@ class MAPF_Solver {
   // In buildPlan, we also try to apply bypasses.
   bool resolveConflicts(void);
   bool addConflict(void);
-  void createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int>* locations, int* time, int* cost, bool forbidden);
+  void createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int> locations, int time, int cost);
   bool processCore(vec<geas::patom_t>& core);
       
   geas::patom_t getBarrier(int ai, BarrierDir dir, int t0, int p0, int dur);
@@ -186,7 +186,7 @@ class MAPF_Solver {
   ~MAPF_Solver();
 };
 
-bool MAPF_MinCost(MAPF_Solver& s, int* agent, tuple<int, int>* locations, int* time, int* cost, bool forbidden);
+bool MAPF_MinCost(MAPF_Solver& s, vector<tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int>> assumptions);
 bool MAPF_MinMakespan(MAPF_Solver& s);
 bool MAPF_MaxDeadlines(MAPF_Solver& s);
 
