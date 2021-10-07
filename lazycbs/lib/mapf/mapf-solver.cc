@@ -6,7 +6,7 @@
 
 // turn off in the future
 #define DEBUG_UC
-#define MAPF_NO_RECTANGLES
+// #define MAPF_NO_RECTANGLES
 
 namespace mapf {
 
@@ -244,18 +244,21 @@ string MAPF_Solver::printPaths() const {
     int startTime = barrier.start;
     int endTime = startTime + barrier.duration;
     int rowOrColumn1 = b_key.first.location;
-    int rowOrColumn2 = b_key.first.time_at_edge + startTime;
+    int rowOrColumn2 = startTime - b_key.first.time_at_edge;
     switch(b_key.first.dir) {
       case UP:
+        output << boost::format(" [%c,(%d,%d),%d,%d,%d]") % 'U' % (rowOrColumn2 - 1) % (rowOrColumn1 - 1) % agent % startTime % endTime;
+        break;
       case DOWN:
         // fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn2 - 1, rowOrColumn1 - 1, agent, startTime, endTime);
-        output << boost::format(" [(%d,%d),%d,%d,%d]") % (rowOrColumn2 - 1) % (rowOrColumn1 - 1) % agent % startTime % endTime;
+        output << boost::format(" [%c,(%d,%d),%d,%d,%d]") % 'D' % (rowOrColumn2 - 1) % (rowOrColumn1 - 1) % agent % startTime % endTime;
         break;
       case LEFT:
+        output << boost::format(" [%c,(%d,%d),%d,%d,%d]") % 'L' % (rowOrColumn1 - 1) % (rowOrColumn2 - 1) % agent % startTime % endTime;
+        break;
       case RIGHT:
-      default:
         // fprintf(f, " [(%d,%d),%d,%d,%d]", rowOrColumn1 - 1, rowOrColumn2 - 1, agent, startTime, endTime);
-        output << boost::format(" [(%d,%d),%d,%d,%d]") % (rowOrColumn1 - 1) % (rowOrColumn2 - 1) % agent % startTime % endTime;
+        output << boost::format(" [%c,(%d,%d),%d,%d,%d]") % 'R' % (rowOrColumn1 - 1) % (rowOrColumn2 - 1) % agent % startTime % endTime;
         break;
     }
   }
