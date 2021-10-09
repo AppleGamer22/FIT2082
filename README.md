@@ -8,8 +8,23 @@ I'm a part of a University research project that is developing an explanation ge
 ## Critical Dependencies & Acknowledgements
 * Gange, G., Harabor, D. and Stuckey, P.J. (2021). Lazy CBS: Implicit Conflict-Based Search Using Lazy Clause Generation. In: Proceedings of the International Conference on Automated Planning and Scheduling. [online] International Conference on Automated Planning and Scheduling. pp.155–162. Available at: https://ojs.aaai.org/index.php/ICAPS/article/view/3471 [Accessed 6 Aug. 2021].
    * [Lazy CBS' code](https://bitbucket.org/gkgange/lazycbs/src/master/)
-* Li, J., Harabor, D., Stuckey, P.J., Ma, H., Gange, G. and Koenig, S. (2021). Pairwise symmetry reasoning for multi-agent path finding search. Artificial Intelligence, [online] 301, p.103574. Available at: https://www.sciencedirect.com/science/article/pii/S0004370221001259?via%3Dihub [Accessed 27 Aug. 2021].
+* Li, J., Harabor, D., Stuckey, P.J., Ma, H., Gange, G. and Koenig, S. (2021). Pairwise symmetry reasoning for multi-agent path finding search. Artificial Intelligence, [online] 301, p.103574. Available at:https://doi.org/10.1016/j.artint.2021.103574 [Accessed 27 Aug. 2021].
 * Gange, G. (2018). `geas`. Bitbucket. https://bitbucket.org/gkgange/geas/src/master/
+
+## Datasets
+* The [MovingAI dataset](https://movingai.com/benchmarks/mapf/index.html) is useful for testing MAPF algorithms because of its variety of maps and multi-agent scenario examples. We used the dataset as part of the constraints and barriers output testing of our [modified Lazy CBS code](https://github.com/AppleGamer22/FIT2082), and as the initial user input for the graphical user interface that displays the multi-agent paths and accept queries from the user.
+   * Here is the [specification](https://movingai.com/benchmarks/formats.html) of the dataset's map and scenario files. Due to the critical dependency of Lazy CBS on ECBS, the map files from Moving AI must be converted to the ECBS format using [this Python 2 script](https://bitbucket.org/gkgange/lazycbs/src/master/scripts/map-conv.py) that was written by one of my project supervisors, Graeme Gange.
+
+## Software Tools
+* [Lazy CBS](https://bitbucket.org/gkgange/lazycbs/src/master/) is the backend MAPF algorithm of this project's explanation engine, written by one of my project supervisors, Graeme Gange.
+* We used [`pybind11`](https://pybind11.readthedocs.io/en/stable/) in order to enable the (compiled) [modified Lazy CBS code](https://github.com/AppleGamer22/FIT2082) to be called from the [GUI's python code](https://github.com/puggxlii/FIT2082MAPF).
+
+## Tutorials & Articles
+* The <http://mapf.info/> website is a great resource that showcases great MAPF research papers, tutorials, software and benchmarks.
+* Gange, G., Harabor, D. and Stuckey, P.J. (2021). Lazy CBS: Implicit Conflict-Based Search Using Lazy Clause Generation. In: Proceedings of the International Conference on Automated Planning and Scheduling. [online] International Conference on Automated Planning and Scheduling. pp.155–162. Available at: https://ojs.aaai.org/index.php/ICAPS/article/view/3471 [Accessed 6 Aug. 2021].
+* Li, J., Harabor, D., Stuckey, P.J., Ma, H., Gange, G. and Koenig, S. (2021). Pairwise symmetry reasoning for multi-agent path finding search. Artificial Intelligence, [online] 301, p.103574. Available at: https://doi.org/10.1016/j.artint.2021.103574 [Accessed 27 Aug. 2021].
+* Sharon, G., Stern, R., Felner, A. and Sturtevant, N.R. (2015). Conflict-based search for optimal multi-agent pathfinding. Artificial Intelligence, [online] 219(1), pp.40–66. Available at: https://doi.org/10.1016/j.artint.2014.11.006 [Accessed 11 Aug. 2021].
+* Stern, R., Sturtevant, N., Felner, A., Koenig, S., Ma, H., Walker, T., Li, J., Atzmon, D., Cohen, L., Kumar, T.K.S., Boyarski, E. and Bartak, R. (2019). Multi-Agent Pathfinding: Definitions, Variants, and Benchmarks. [online] arXiv.org. Available at: https://arxiv.org/abs/1906.08291 [Accessed 13 Aug. 2021].
 
 ## Queries
 ### Query Parameters
