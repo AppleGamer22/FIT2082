@@ -55,6 +55,13 @@ class MAPF_Solver {
     int duration;
   };
 
+  struct barrier_metadata {
+    int agent;
+    int startTime;
+    int corner1;
+    int corner2;
+  };
+
   struct barrier_key_hasher {
     size_t operator()(const barrier_key& k) const {
       size_t h(5331);
@@ -135,6 +142,7 @@ class MAPF_Solver {
   vec<bool> reservation_table;
   vec<int> cmap; // Map at the current time
   vec<int> nmap; // Map at the next time
+  vec<barrier_metadata> b_metadata;
 
   // Constraints?
   vec<cons_data> constraints;

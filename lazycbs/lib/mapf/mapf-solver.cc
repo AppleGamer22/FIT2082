@@ -792,11 +792,13 @@ bool MAPF_Solver::addConflict(void) {
       BarrierDir dH(row_of(p_s) < row_of(p_e) ? DOWN : UP);
       if(s_time > 0 || pathfinders[aH]->engine.start_location != p_s - dt*h_delta) {
         barrier_atoms.push(getBarrier(aH, dH, s_time - dt, p_s - dt*h_delta, h_dur + dt));
+        b_metadata.push({aH, s_time - dt, p_s, p_e});
       }
 
       int eh_start(ml->linearize_coordinate(row_of(p_s), col_of(p_e)));
       int eh_time(s_time + abs(col_of(p_e) - col_of(p_s)));
       barrier_atoms.push(getBarrier(aH, dH, eh_time - dt, eh_start - dt*h_delta, h_dur+dt));
+      b_metadata.push({aH, eh_time - dt, p_s, p_e});
 
       int v_dur(1 + abs(col_of(p_e) - col_of(p_s)));
       int v_delta(col_of(p_s) < col_of(p_e) ? 1 : -1);
@@ -804,11 +806,13 @@ bool MAPF_Solver::addConflict(void) {
 
       if(s_time > 0 || pathfinders[aV]->engine.start_location != p_s - dt*v_delta) {
         barrier_atoms.push(getBarrier(aV, dV, s_time - dt, p_s - dt*v_delta, v_dur+dt));
+        b_metadata.push({aV, s_time - dt, p_s, p_e});
       }
 
       int ev_start(ml->linearize_coordinate(row_of(p_e), col_of(p_s)));
       int ev_time(s_time + abs(row_of(p_e) - row_of(p_s)));
       barrier_atoms.push(getBarrier(aV, dV, ev_time - dt, ev_start - dt*v_delta, v_dur+dt));
+      b_metadata.push({aV, ev_time - dt, p_s, p_e});
 
       // One of the barriers must be active
       add_clause(*s.data, barrier_atoms);
