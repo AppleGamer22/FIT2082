@@ -55,12 +55,26 @@ class MAPF_Solver {
     int duration;
   };
 
+  enum barrier_direction {
+    VERTICAL,
+    HORIZONTAL
+  };
+
+  enum barrier_type {
+    ENTRY,
+    EXIT
+  };
+
   struct barrier_metadata {
     int agent;
     int startTime;
+    int duration;
     int corner1;
     int corner2;
+    barrier_direction direction;
+    barrier_type type;
   };
+
 
   struct barrier_key_hasher {
     size_t operator()(const barrier_key& k) const {
