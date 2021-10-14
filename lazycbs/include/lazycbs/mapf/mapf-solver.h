@@ -55,7 +55,7 @@ class MAPF_Solver {
     int duration;
   };
 
-  enum barrier_direction {
+  enum barrier_direction_type {
     VERTICAL,
     HORIZONTAL
   };
@@ -71,7 +71,8 @@ class MAPF_Solver {
     int duration;
     int corner1;
     int corner2;
-    barrier_direction direction;
+    BarrierDir direction;
+    barrier_direction_type direction_type;
     barrier_type type;
   };
 
