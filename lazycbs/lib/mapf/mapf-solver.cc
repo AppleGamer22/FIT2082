@@ -225,8 +225,7 @@ string MAPF_Solver::printPaths() const {
   output << "Constraints: ";
   for (auto c_key: cons_map) {
     int loc1 = c_key.first.loc1, loc2 = c_key.first.loc2, timestamp = c_key.first.timestamp;
-    int agent = 0;
-    for (; agent < pathfinders.size(); agent++) {
+    for (int agent = 0; agent < pathfinders.size(); agent++) {
       if (constraints[c_key.second].attached.elem(agent) && pathfinders[agent]->getPath()[timestamp] != loc1 && pathfinders[agent]->getPath()[timestamp] != loc2) {
         // fprintf(f, " [(%d,%d),(%d,%d),%d,%d]", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2)-1, col_of(loc2) - 1, agent, timestamp);
         output << boost::format(" [(%d,%d),(%d,%d),%d,%d]") % (row_of(loc1) - 1) % (col_of(loc1) - 1) % (row_of(loc2) - 1) % (col_of(loc2) - 1) % agent % timestamp;
