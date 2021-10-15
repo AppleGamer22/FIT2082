@@ -239,7 +239,7 @@ string init(string map, string scenario, int agentsCount, vector<tuple<int, tupl
   // mapf.printStats(stderr);
   // fprintf(stderr, "\n");
   if (okay) return mapf.printPaths();
-  else return "ERROR";
+  else return "not found";
 }
 
 PYBIND11_MODULE(lazycbs, m) {
