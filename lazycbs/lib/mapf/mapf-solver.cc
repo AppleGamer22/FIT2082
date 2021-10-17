@@ -902,7 +902,6 @@ bool MAPF_Solver::addConflict(void) {
 
 // based on addConflict
 void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<int, int> locations, int time, int cost, bool forbidden) {
-  // agent(1), vertex(1, 2), time(7), len(10)
   if (cost > 0) {
     patom_t costAssumption = pathfinders[agent]->cost <= cost;
     assumptions.push(costAssumption);
@@ -922,8 +921,16 @@ void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<i
       constraints.push(cons_data { s.new_intvar(0, pathfinders.size() - 1), btset::bitset(pathfinders.size()) });
     }
     cons_data& c(constraints[idx]);
-    patom_t agentAssumption = forbidden ? c.sel != agent : c.sel == agent;
-    assumptions.push(agentAssumption);
+    if (!c.attached.elem(agent)) {
+      patom_t at(c.sel != agent);
+      while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
+      pathfinders[agent]->register_obstacle(at, time, loc1, loc2);
+      c.attached.insert(agent);
+    }
+    if (!forbidden) {
+      patom_t agentAssumption = c.sel == agent;
+      assumptions.push(agentAssumption);
+    }
   }
 }
 
@@ -1044,12 +1051,11 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
   bool replan = true;
   while (replan) {
     printf("Replanning...\n");
-    while(!mapf.buildPlan(assumps)) {
+    while (!mapf.buildPlan(assumps)) {
       core.clear();
       mapf.s.get_conflict(core);
       mapf.s.clear_assumptions();
-      if(core.size() == 0)
-        return false;
+      if(core.size() == 0) return false;
       // Look at the core elements.
       vec<int> idxs;
       uint64_t Dmin = UINT64_MAX;
@@ -1109,6 +1115,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
             const bool intruded = mapf.eq_locs(location, location1) || mapf.eq_locs(location, location2);
             mapf::MAPF_Solver::cons_key k {time2, location, -1};
             auto it = mapf.cons_map.find(k);
+            // printf("Agent %d at (%d, %d)\n", agent2, mapf.row_of(location) - 1, mapf.col_of(location) - 1);
             if (agent2 == agent1 && intruded && it == mapf.cons_map.end()) {
               tuple<int, int> locations2 = {location, -1};
               mapf.createAssumption(assumps, agent2, locations2, time2, cost, true);
