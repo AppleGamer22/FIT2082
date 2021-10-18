@@ -926,11 +926,13 @@ void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<i
       while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
       pathfinders[agent]->register_obstacle(at, time, loc1, loc2);
       c.attached.insert(agent);
+      assumptions.push(at);
     } else {
       patom_t at(c.sel == agent);
-      while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
+      // while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
       // pathfinders[agent]->register_obstacle(at, time, loc1, loc2);
-      c.attached.insert(agent);
+      // c.attached.insert(agent);
+      assumptions.push(at);
     }
   }
 }
@@ -1041,7 +1043,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
     int location2Encoded = mapf.loc_enc(location2);
     int time1 = get<2>(assumption);
     int cost = get<3>(assumption);
-    if (agent1 >= 0 && (location1Encoded >= 0 || location2Encoded >= 0)) {
+    if (agent1 >= 0 && time1 >= 0 && (location1Encoded >= 0 || location2Encoded >= 0)) {
       mapf.createAssumption(assumps, agent1, {mapf.loc_enc(location1), mapf.loc_enc(location2)}, time1, cost, false);
     }
   }
