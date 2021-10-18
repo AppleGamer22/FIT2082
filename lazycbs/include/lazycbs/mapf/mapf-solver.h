@@ -158,6 +158,8 @@ class MAPF_Solver {
   vec<int> cmap; // Map at the current time
   vec<int> nmap; // Map at the next time
   vec<barrier_metadata> b_metadata;
+  // (agent, time, loc)
+  vec<tuple<int, int, int>> timelessAssumptions;
 
   // Constraints?
   vec<cons_data> constraints;

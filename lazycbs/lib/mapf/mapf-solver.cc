@@ -921,15 +921,16 @@ void MAPF_Solver::createAssumption(vec<patom_t>& assumptions, int agent, tuple<i
       constraints.push(cons_data { s.new_intvar(0, pathfinders.size() - 1), btset::bitset(pathfinders.size()) });
     }
     cons_data& c(constraints[idx]);
-    if (!c.attached.elem(agent)) {
+    if (forbidden) {
       patom_t at(c.sel != agent);
       while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
       pathfinders[agent]->register_obstacle(at, time, loc1, loc2);
       c.attached.insert(agent);
-    }
-    if (!forbidden) {
-      patom_t agentAssumption = c.sel == agent;
-      assumptions.push(agentAssumption);
+    } else {
+      patom_t at(c.sel == agent);
+      while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
+      // pathfinders[agent]->register_obstacle(at, time, loc1, loc2);
+      c.attached.insert(agent);
     }
   }
 }
@@ -1049,6 +1050,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
 
   vec<geas::patom_t> core;
   bool replan = true;
+  // vec<vec<int>> timeslessAssumptions;
   while (replan) {
     printf("Replanning...\n");
     while (!mapf.buildPlan(assumps)) {
@@ -1108,19 +1110,40 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
       int time1 = get<2>(assumption);
       int cost = get<3>(assumption);
       if (agent1 >= 0 && !(mapf.loc_enc(location1) == -1 && mapf.loc_enc(location2) != -1) && time1 < 0) {
+        // if (timeslessAssumptions.size() < agent1) {
+        //   vec<int> timeslessAssumption = vec<int>(mapf.pathfinders[agent1]->getPath().size());
+        //   timeslessAssumptions.push(timeslessAssumption);
+        // }
         for (int agent2 = 0; agent2 < mapf.pathfinders.size(); agent2++) {
-          const vec<int> plan = mapf.pathfinders[agent2]->getPath();
-          for (int time2 = 0; time2 < plan.size(); time2++) {
-            const int location = plan[time2];
-            const bool intruded = mapf.eq_locs(location, location1) || mapf.eq_locs(location, location2);
-            mapf::MAPF_Solver::cons_key k {time2, location, -1};
-            auto it = mapf.cons_map.find(k);
-            // printf("Agent %d at (%d, %d)\n", agent2, mapf.row_of(location) - 1, mapf.col_of(location) - 1);
-            if (agent2 == agent1 && intruded && it == mapf.cons_map.end()) {
-              tuple<int, int> locations2 = {location, -1};
-              mapf.createAssumption(assumps, agent2, locations2, time2, cost, true);
-              printf("Agent %d cannot be at (%d, %d) at time %d\n", agent2, mapf.row_of(location) - 1, mapf.col_of(location) - 1, time2);
-              replan = true;
+          if (agent2 == agent1) {
+            const vec<int> plan = mapf.pathfinders[agent2]->getPath();
+            for (int time2 = 0; time2 < plan.size(); time2++) {
+              const int location = plan[time2];
+              int row = mapf.row_of(location) - 1;
+              int col = mapf.col_of(location) - 1;
+              const bool intruded = mapf.eq_locs(location, location1) || mapf.eq_locs(location, location2);
+              mapf::MAPF_Solver::cons_key k {time2, location, -1};
+              auto it = mapf.cons_map.find(k);
+              bool seen = false;
+              for (tuple<int, int, int> tup: mapf.timelessAssumptions) {
+                int a = get<0>(tup);
+                int t = get<1>(tup);
+                int l = get<2>(tup);
+                if (t == time2 && a == agent1 && intruded && location == l) {
+                  // printf("seen agent %d at time %d (%d,%d)\n", agent1, time2, row, col);
+                  seen = true;
+                  break;
+                }
+              }
+              // printf("time %d, loc (%d,%d) agent %d seen %d intruded %d\n", time2, row, col, agent2, seen, intruded);
+              if (intruded) {
+                mapf.timelessAssumptions.push({agent1, time2, location});
+                tuple<int, int> locations2 = {location, -1};
+                mapf.createAssumption(assumps, agent1, locations2, time2, cost, true);
+                printf("Agent %d cannot be at (%d, %d) at time %d\n", agent1, row, col, time2);
+                replan = true;
+                continue;
+              }
             }
           }
         }
