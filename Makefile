@@ -21,7 +21,7 @@ geas:
 
 lazycbs:
 	cd lazycbs && $(MAKE)
-	cd lazycbs && python3 -c 'from lazycbs import init; print(init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, [(1, ((1, 4), (-1, -2)), -2, -100)]))'
+	cd lazycbs && python3 -c 'from lazycbs import init; print(init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, [(1, ((2, 4), (-1, -2)), -2, -100)]))'
 
 clean:
 	cd ECBS_PF && $(MAKE) clean
