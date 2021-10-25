@@ -180,8 +180,10 @@ class MAPF_Solver {
   int HL_conflicts;
 
   inline int row_of(int loc) const { return loc / ml->cols; }
+  // encode a (row, column) location with lazycbs integer encoding
   inline int loc_enc(tuple<int, int> loc) const { return get<0>(loc) * ml->cols + get<1>(loc); }
   inline int col_of(int loc) const { return loc % ml->cols; }
+  // compare a (row, column) location with lazycbs integer encoded location
   inline bool eq_locs(int loc1, tuple<int, int> loc2) const { return col_of(loc1) == get<1>(loc2) + 1 && row_of(loc1) == get<0>(loc2) + 1; }
 
   int maxPathLength(void) const;

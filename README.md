@@ -34,10 +34,14 @@ I'm a part of a University research project that is developing an explanation ge
 * agent
 * edge (expressed as 2 adjacent locations)
 
-### Example Queries
-* `agent(0), edge((3, 2), (3, 3)), time(4)`
-* `agent(1), vertex(1, 2), time(7), len(10)`
-* `agent(0), len(8)`
+## Debugging
+* In the following example, the `lazycbs` binary is debugged with `gdb`.
+   * It is checked if Agent 1 can be forced to traverse through `(3, 3)` while going to its target location.
+   * This check must run from the `lazycbs` directory.
+
+```bash
+gdb --args python3 -c 'from lazycbs import init; print(init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, [(1, ((3, 3), (-1, -2)), -4, -100)]))'
+```
 
 ## Dependencies
 ### Debian Linux

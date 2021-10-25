@@ -82,142 +82,27 @@ AgentsLoader read_movingai(std::string fname, int upto) {
   return al;
 }
 
-// int main(int argc, char** argv) {
-//   // Reading arguments ----------------------------------------------------------------
-//   string map_fname, agents_fname, hwy_fname, search_method, results_fname;
-//   // double w_hwy = 1.0 , w_focal = 1.0
-//   int rrr_it, time_limit;  // random restarts iterations number
-//   int agents_upto;
-//   bool tweakGVal, rand_succ_gen;
-//   bool opt_makespan;
-//   bool opt_anytime;
-//   try {
-//     options_description desc("Options");
-//     desc.add_options() 
-//       ("help", "Print help messages")
-//       ("map", value<string>(&map_fname)->required(), "Map filename")
-//       ("agents", value<string>(&agents_fname)->required(), "Agents filename")
-//       ("upto", value<int>(&agents_upto)->default_value(INT_MAX), "Number of agents to read (expects movingai format).")
-//       // ("highway", value<string>(&hwy_fname)->required(), "Highway filename or CRISSCROSS / GM / HONG")
-//       //("focal_w", value<double>(&w_focal)->default_value(1), "Focal weight")
-//       //("highway_w", value<double>(&w_hwy)->default_value(1), "Highway weight")
-//       ("search", value<string>(&search_method)->default_value("ECBS"), "Search method (ECBS or iECBS. Default is ECBS)")
-//       ("makespan", value<bool>(&opt_makespan)->default_value(false), "Optimize makespan, rather than cost (Default false)")
-//       ("anytime", value<bool>(&opt_anytime)->default_value(false), "Use anytime cost optimization.")
-//       ("tweakGVal", value<bool>(&tweakGVal)->default_value(false), "Change the cost structure or not (deprecated)")
-//       ("rand_succ_gen", value<bool>(&rand_succ_gen)->default_value(false), "Random order of successors generation (in the low-level search)")
-//       ("RRR", value<int>(&rrr_it)->default_value(0), "Random Restart #iterations (Default is 0, which runs once from root node for agentse ordered sequentially)")
-//       ("export_results", value<string>(&results_fname)->default_value("NONE"), "Results filename")
-//       ("time_limit",value<int>(&time_limit)->default_value(300), "Time limit cutoff [seconds]")
-//       ;
+/*
+This function accepts the map path, scenario, agent count and constraints.
 
-//     variables_map vm;
-//     store(parse_command_line(argc, argv, desc), vm);
-//     if (vm.count("help")) { 
-//       cout << endl << desc << endl;
-//       return 0;
-//     }
-//     notify(vm);
-//   } catch(boost::program_options::required_option& e) {
-//     cout << endl << e.what() << endl;
-//     cout << "Use --help for arguments info." << endl << endl;
-//     return 0;
-//   }
-//   catch (exception& e) {
-//     cerr << endl << e.what() << endl;
-//     cout << "Use --help for arguments info." << endl << endl;
-//     return -1;
-//   }
-//   // ---------------------------------------------------------------------------------- 
+The constarints are in the form (agent, ((row1, column1), (row2, column2)), time, cost).
 
-// //cout << std::boolalpha<< rand_succ_gen << endl;
+Null locations must have both row and column negative.
 
-//   // In case we get timed out during initialisation.
+Null time must be negative
 
-//   std::clock_t start(std::clock());
+Null cost must be negative
 
-//   set_handlers();
-//   // read the map file and construct its two-dim array
+Agent must be non-negative
 
-//   MapLoader ml = MapLoader(map_fname);
-  
-//   // read agents' start and goal locations
-//   AgentsLoader al(agents_upto < INT_MAX ? read_movingai(agents_fname, agents_upto) : AgentsLoader(agents_fname));
-
-//   // read the egraph (egraph file, experience_weight, weigthedastar_weight)
-//   EgraphReader egr;
-// /*
-//   if (hwy_fname.compare("CRISSCROSS") == 0) {
-//     egr = EgraphReader();
-//     egr.createCrissCrossHWY(&ml);
-//   } else if (hwy_fname.compare("GM") == 0) {
-//     LearnGMHWY* lgmhwy = new LearnGMHWY(map_fname, agents_fname);
-//     egr = *(lgmhwy->getHWY(1, w_hwy, 1));  // #iterations=1, w_hwy(=1 for first iteration), w_focal=1
-//   } else if (hwy_fname.compare("HONG") == 0) {
-//     HongHWY* honghwy = new HongHWY(map_fname, agents_fname);
-//     egr = *(honghwy->getHWY(100000,0.5,1.2,1.3));  // (#iterations, alpha, beta, gamma)
-//   } else {  // filename
-// */
-//     // egr = EgraphReader(hwy_fname);
-// //  }
-
-// #if 0
-//   cout << /*search_method */ "geas-mapf" << " ; "
-//        << map_fname << " ; "
-//        << agents_fname << " ; "
-//        << al.num_of_agents << " ; "
-//        // << hwy_fname << " ; "
-//        // << w_hwy << " ; "
-//        // << w_focal << " ; ";
-//        ;
-// #endif
-//     //       << std::boolalpha << tweakGVal << " ; ";
-//   //  cout << "PATH FOUND ; COST ; LB ; HL-EXP ; HL-GEN ; LL-EXP ; LL-GEN ; TIME[s]" << endl;
-//   //fflush(stdout);
-//   mapf::MAPF_Solver mapf(ml, al, egr, 1e8);
-
-//   //ofstream res_f;
-//   //res_f.open(results_fname, ios::app);  // append the results file
-
-//   //bool res;
-//   //cout << rrr_it << " ; ";
-
-//   clear_handlers();
-// 	// ECBSSearch ecbs = ECBSSearch(ml, al, egr, w_hwy, w_focal, tweakGVal, rrr_it, rand_succ_gen);
-// 	// ecbs.time_limit_cutoff = time_limit;
-//   // bool res = ecbs.runECBSSearch();
-//   // ecbs.printPaths();
-//   bool okay = false;
-//   try {
-//     if(terminated)
-//       throw mapf::MAPF_Solver::SolveAborted {};
-
-//     // bool res = mapf.minimizeCost();
-//     okay = opt_makespan ? MAPF_MinMakespan(mapf) : MAPF_MinCost(mapf, assumptions);
-//     // bool res = MAPF_MinMakespan(mapf);
-//   } catch (mapf::MAPF_Solver::SolveAborted& s) {
-//     // fprintf(stderr, "%% Solve aborted.\n");
-//   }
-//   if (okay) {
-//     cout << mapf.printPaths();
-//     cout << "\n";
-//   }
-
-//   fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map_fname.c_str(), agents_fname.c_str(), al.num_of_agents,
-//     okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
-//   mapf.printStats(stderr);
-//   fprintf(stderr, "\n");
-// }
-
+If time is negative and at least one location is not nullish, Lazy CBS will return a path where the provided agent does not visit the given location(s).
+*/
 string init(string map, string scenario, int agentsCount, vector<tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int>> assumptions) {
-  // int agent, tuple<int, int> locations, int time, int cost, bool forbidden
-  // empty location == (-1, 2)
   bool opt_makespan = false;
   std::clock_t start(std::clock());
   set_handlers();
   MapLoader ml = MapLoader(map);
   
-  // read agents' start and goal locations
   AgentsLoader al(agentsCount < INT_MAX ? read_movingai(scenario, agentsCount) : AgentsLoader(scenario));
 
   // read the egraph (egraph file, experience_weight, weigthedastar_weight)
@@ -235,9 +120,8 @@ string init(string map, string scenario, int agentsCount, vector<tuple<int, tupl
   } catch (mapf::MAPF_Solver::SolveAborted& s) {
     // fprintf(stderr, "%% Solve aborted.\n");
   }
-  // fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map.c_str(), scenario.c_str(), al.num_of_agents, okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
-  // mapf.printStats(stderr);
-  // fprintf(stderr, "\n");
+  fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map.c_str(), scenario.c_str(), al.num_of_agents, okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
+  mapf.printStats(stderr);
   if (okay) return mapf.printPaths();
   else return "not found";
 }

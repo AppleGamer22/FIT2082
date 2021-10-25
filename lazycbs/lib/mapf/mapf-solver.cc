@@ -209,33 +209,35 @@ void MAPF_Solver::printStats(FILE* f) const {
   // std::cout << cost_lb << " ; " << s.data->stats.conflicts << " ; " << LL_num_expanded << " ; " << LL_num_generated << " ; " << HL_conflicts << " ; " << LL_executions;
 }
 
+/*
+This function prints the plan and constraints in the folloowing order:
+
+1. The plan for each agent is printed in a separate line with the prefix "Agent a: " (a is the agent number), which followed by a space-delimited list of coordinates in the form (row,column).
+2. The constraints are printed in seprate line with the prefix "Constraints: ", which is followed by a space-delimited list of constraints in the form [(row1,column1),(row2,column2),agent,time]
+3. The barriers are printed in seprate line with the prefix "Barriers: ", which is followed by a space-delimited list of barriers in the form [type,direction,(row1,column1),(row2,column2),agent,time1,time2]
+  * The type can be either ENTRY or EXIT
+  * The direction can be UP, DOWN, LEFT or RIGHT
+*/ 
 string MAPF_Solver::printPaths() const {
   std::ostringstream output;
   for(int ai = 0; ai < pathfinders.size(); ++ai) {
-    // fprintf(f, "Agent %d:", ai);
     output << boost::format("Agent %d:") % ai;
     for(int loc : pathfinders[ai]->getPath()) {
-      // fprintf(f, " (%d,%d)", row_of(loc)-1, col_of(loc)-1);
       output << boost::format(" (%d,%d)") % (row_of(loc) - 1) % (col_of(loc) - 1);
     }
-    // fprintf(f, "\n");
     output << "\n";
   }
-  // fprintf(f, "Constraints: ");
   output << "Constraints: ";
   for (auto c_key: cons_map) {
     int loc1 = c_key.first.loc1, loc2 = c_key.first.loc2, timestamp = c_key.first.timestamp;
     for (int agent = 0; agent < pathfinders.size(); agent++) {
       if (constraints[c_key.second].attached.elem(agent) && pathfinders[agent]->getPath()[timestamp] != loc1 && pathfinders[agent]->getPath()[timestamp] != loc2) {
-        // fprintf(f, " [(%d,%d),(%d,%d),%d,%d]", row_of(loc1) - 1, col_of(loc1) - 1, row_of(loc2)-1, col_of(loc2) - 1, agent, timestamp);
         output << boost::format(" [(%d,%d),(%d,%d),%d,%d]") % (row_of(loc1) - 1) % (col_of(loc1) - 1) % (row_of(loc2) - 1) % (col_of(loc2) - 1) % agent % timestamp;
         break;
       }
     }
   }
-  // fprintf(f, "\n");
   output << "\n";
-  // fprintf(f, "Barriers: ");
   output << "Barriers: ";
   for (auto meta: b_metadata) {
     int agent = meta.agent;
@@ -247,7 +249,6 @@ string MAPF_Solver::printPaths() const {
     string direction = meta.direction == UP ? "UP" : meta.direction == DOWN ? "DOWN" : meta.direction == LEFT ? "LEFT" : "RIGHT";
     output << boost::format(" [%s,%s,(%d,%d),(%d,%d),%d,%d,%d]") % type % direction % (row_of(corner1) - 1) % (col_of(corner1) - 1) % (row_of(corner2) - 1) % (col_of(corner2) - 1) % agent % startTime % endTime;
   }
-  // fprintf(f, "\n");
   return output.str();
 }
 // Returns maximum length
@@ -900,7 +901,17 @@ bool MAPF_Solver::addConflict(void) {
   return true;
 }
 
-// based on addConflict
+/*
+Null integer-encoded locations must be negative.
+
+Null time must be negative
+
+Null cost must be negative
+
+Agent must be non-negative
+
+If time is non-negative, forbidden is true and at least one location is not nullish, Lazy CBS will return a path where the provided agent does not visit the given location(s).
+*/
 vec<mapf::patom_t> MAPF_Solver::createAssumption(int agent, tuple<int, int> locations, int time, int cost, bool forbidden) {
   vec<mapf::patom_t> output;
   if (cost > 0) {
@@ -909,7 +920,6 @@ vec<mapf::patom_t> MAPF_Solver::createAssumption(int agent, tuple<int, int> loca
   }
   int loc1 = get<0>(locations);
   int loc2 = get<1>(locations);
-  //2nd loc = -1 for 1 loc
   if (time >= 0 && !(loc1 == -1 && loc2 != -1)) {
     cons_key k { time, loc1, loc2 };
     auto it(cons_map.find(k));
@@ -932,9 +942,6 @@ vec<mapf::patom_t> MAPF_Solver::createAssumption(int agent, tuple<int, int> loca
       output.push(at);
     } else {
       patom_t at(c.sel == agent);
-      // while (s.level() > 0 && at.lb(s.data->ctx())) s.backtrack();
-      // pathfinders[agent]->register_obstacle(at, time, loc1, loc2);
-      // c.attached.insert(agent);
       output.push(at);
     }
   }
@@ -1019,6 +1026,19 @@ MAPF_Solver::~MAPF_Solver(void) {
 
 }
 
+/*
+The constarints are in the form (agent, ((row1, column1), (row2, column2)), time, cost).
+
+Null locations must have both row and column negative.
+
+Null time must be negative
+
+Null cost must be negative
+
+Agent must be non-negative
+
+If time is negative and at least one location is not nullish, Lazy CBS will return a path where the provided agent does not visit the given location(s).
+*/
 bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int>> assumptions) {
   // Reset any existing assumptions
   mapf.s.clear_assumptions(); 
@@ -1038,6 +1058,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
   fprintf(stderr, "%%%% Initial bound: %d\n", cost_lb);
 #endif
 
+  // insert timed constraints to assumps list
   vec<geas::patom_t> assumps;
   vec<mapf::patom_t> timeless_assumps;
   for (tuple<int, tuple<tuple<int, int>, tuple<int, int>>, int ,int> assumption: assumptions) {
@@ -1109,6 +1130,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
       
       // Now set up the updated assumptions
       assumps.clear();
+      // specific assumptions for violated timeless assumptions are stored in timeless_assumptions that are reinserted into assumps before each recomputation
       for (auto atom: timeless_assumps) {
         assumps.push(atom);
       }
@@ -1121,20 +1143,16 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
       int agent1 = get<0>(assumption);
       tuple<tuple<int, int>, tuple<int, int>> locations = get<1>(assumption);
       tuple<int, int> location1 = get<0>(locations);
-      // int location1X = get<0>(location1);
       tuple<int, int> location2 = get<1>(locations);
-      // int location2X = get<0>(location2);
       int time1 = get<2>(assumption);
       int cost = get<3>(assumption);
+      // check if a timeless assumption is violated and add a specific time assumption
       if (agent1 >= 0 && !(mapf.loc_enc(location1) == -1 && mapf.loc_enc(location2) != -1) && time1 < 0) {
-        // if (timeslessAssumptions.size() < agent1) {
-        //   vec<int> timeslessAssumption = vec<int>(mapf.pathfinders[agent1]->getPath().size());
-        //   timeslessAssumptions.push(timeslessAssumption);
-        // }
         for (int agent2 = 0; agent2 < mapf.pathfinders.size(); agent2++) {
           if (agent2 == agent1) {
             const vec<int> plan = mapf.pathfinders[agent2]->getPath();
             for (int time2 = 0; time2 < plan.size(); time2++) {
+              // if the current time is equal to the long-term cost of the entire plan, the plan is decrelaed unfeasible.
               if (time2 == longterm_cost) {
                 return false;
               }
@@ -1142,20 +1160,6 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
               int row = mapf.row_of(location) - 1;
               int col = mapf.col_of(location) - 1;
               const bool intruded = mapf.eq_locs(location, location1) || mapf.eq_locs(location, location2);
-              // mapf::MAPF_Solver::cons_key k {time2, location, -1};
-              // auto it = mapf.cons_map.find(k);
-              // bool seen = false;
-              // for (tuple<int, int, int> tup: mapf.timelessAssumptions) {
-              //   int a = get<0>(tup);
-              //   int t = get<1>(tup);
-              //   int l = get<2>(tup);
-              //   if (t == time2 && a == agent1 && intruded && location == l) {
-              //     // printf("seen agent %d at time %d (%d,%d)\n", agent1, time2, row, col);
-              //     seen = true;
-              //     break;
-              //   }
-              // }
-              // printf("time %d, loc (%d,%d) agent %d seen %d intruded %d\n", time2, row, col, agent2, seen, intruded);
               if (intruded) {
                 mapf.timelessAssumptions.push({agent1, time2, location});
                 tuple<int, int> locations2 = {location, -1};
@@ -1173,6 +1177,7 @@ bool MAPF_MinCost(MAPF_Solver& mapf, vector<tuple<int, tuple<tuple<int, int>, tu
       }
     }
   }
+  // if no timeless assumption is violated and the plan is feasible, indicate success
   return true;
 }
 
