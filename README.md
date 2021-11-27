@@ -52,7 +52,18 @@ sudo apt install build-essential gcc g++ make ocaml opam libboost-all-dev libspa
 ```
 sudo pacman -S base-devel gcc make ocaml ocaml-compiler-libs opam boost boost-libs sparsehash
 ```
-### Required Steps
-1. Run: `opam init`
-2. Append to your `.bashrc`/`.zshrc`: `eval "$(opam config env)"`
-3. Run: `opam install camlidl`
+### Compiling
+1. Make sure you have a working Debian/Arch Linux installation
+2. Install the dependencies for your Linux distribution
+3. Run: `opam init`
+4. Append to your `.bashrc`/`.zshrc`: `eval "$(opam config env)"`
+5. Run `source ~/.bashrc`
+6. Run: `opam install camlidl`
+7. Clone this repository with either of the following procedures:
+   * Run `git clone https://github.com/AppleGamer22/FIT2082.git` in your terminal
+   * Run `gh repo clone AppleGamer22/FIT2082` in your terminal
+   * Download the repository manually through GitHub's website
+8. Change directory to the root directory of this project
+9. Run `make build` to compile the binary.
+   * If running `make build` fails, please try to run `make clean` and run `make build`
+10. 
