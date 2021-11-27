@@ -67,7 +67,7 @@ sudo pacman -S base-devel gcc make ocaml ocaml-compiler-libs opam boost boost-li
 8. Change directory to the root directory of this project
 9.  Run `make build` to compile the binary.
    * If running `make build` fails, please try to run `make clean` and run `make build`
-11. 
+11. A `lazycbs.cpython-38-x86_64-linux-gnu.so` (or a similar name if you run a non-`amd64` CPU) will be available in the `lazycbs` directory.
 12. To run the debugging example without a GUI:
 ```bash
 $ cd lazycbs
