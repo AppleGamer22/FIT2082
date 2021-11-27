@@ -6,5 +6,5 @@ geas/fz/
 lazycbs/lazy-cbs
 ECBS_PF/libecbs.a
 *.log
-geas/fzn
-geas/tests
+# geas/fzn
+# geas/tests
