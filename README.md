@@ -45,18 +45,19 @@ gdb --args python3 -c 'from lazycbs import init; print(init("../maps/debug-6-6.m
 
 ## Dependencies
 ### Debian Linux
-```
-sudo apt install build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev python-dev
+```bash
+sudo apt install build-essential gcc g++ make ocaml opam libboost-all-dev libsparsehash-dev python3-dev pybind11-dev python3-pybind11
 ```
 ### Arch Linux
+```bash
+sudo pacman -S base-devel gcc make ocaml ocaml-compiler-libs opam boost boost-libs sparsehash python pybind11
 ```
-sudo pacman -S base-devel gcc make ocaml ocaml-compiler-libs opam boost boost-libs sparsehash
-```
+
 ### Compiling
-1. Make sure you have a working Debian/Arch Linux installation
-2. Install the dependencies for your Linux distribution
+1. Make sure you have a working Debian-based/Arch-based Linux installation
+2. Install the [dependencies](#dependencies) for your Linux distribution
 3. Run: `opam init`
-4. Append to your `.bashrc`/`.zshrc`: `eval "$(opam config env)"`
+4. Append to the end of your `.bashrc`/`.zshrc`: `eval "$(opam config env)"`
 5. Run `source ~/.bashrc`
 6. Run: `opam install camlidl`
 7. Clone this repository with either of the following procedures:
@@ -64,6 +65,11 @@ sudo pacman -S base-devel gcc make ocaml ocaml-compiler-libs opam boost boost-li
    * Run `gh repo clone AppleGamer22/FIT2082` in your terminal
    * Download the repository manually through GitHub's website
 8. Change directory to the root directory of this project
-9. Run `make build` to compile the binary.
+9.  Run `make build` to compile the binary.
    * If running `make build` fails, please try to run `make clean` and run `make build`
-10. 
+11. 
+12. To run the debugging example without a GUI:
+```bash
+$ cd lazycbs
+$ python3 -c 'from lazycbs import init; print(init("../maps/debug-6-6.map.ecbs", "../scenarios/debug-6-6-2-2.scen", 2, [(1, ((2, 4), (-1, -2)), -2, -100)]))'
+```
