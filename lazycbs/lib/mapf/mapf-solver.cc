@@ -205,7 +205,7 @@ void MAPF_Solver::printStats(FILE* f) const {
     LL_num_expanded += p->num_expanded;
     LL_executions += p->num_executions;
   }
-  fprintf(f, "%d ; %d ; %d ; %d ; %d ; %d", cost_lb, s.data->stats.conflicts, LL_num_expanded, LL_num_generated, HL_conflicts, LL_executions);
+  fprintf(f, "%d ; %d ; %d ; %d ; %d ; %d\n", cost_lb, s.data->stats.conflicts, LL_num_expanded, LL_num_generated, HL_conflicts, LL_executions);
   // std::cout << cost_lb << " ; " << s.data->stats.conflicts << " ; " << LL_num_expanded << " ; " << LL_num_generated << " ; " << HL_conflicts << " ; " << LL_executions;
 }
 
