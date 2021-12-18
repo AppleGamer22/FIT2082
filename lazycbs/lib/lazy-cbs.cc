@@ -16,6 +16,7 @@
 #include <utility>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/format.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -122,8 +123,12 @@ string init(string map, string scenario, int agentsCount, vector<tuple<int, tupl
   }
   fprintf(stderr, "lazy-cbs ; %s ; %s ; %d ; %s ; %.02lf ; ", map.c_str(), scenario.c_str(), al.num_of_agents, okay ? "done" : "timeout", 1000.0 * (std::clock() - start) / CLOCKS_PER_SEC);
   mapf.printStats(stderr);
-  if (okay) return mapf.printPaths();
-  else return "not found";
+  if (okay) {
+    std::ostringstream output;
+    output << boost::format("Map: %s\n") % map;
+    output << mapf.printPaths();
+    return output.str();
+  } else return "not found";
 }
 
 PYBIND11_MODULE(lazycbs, m) {
